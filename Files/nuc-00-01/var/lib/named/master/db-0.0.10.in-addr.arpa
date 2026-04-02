@@ -1,0 +1,55 @@
+$TTL 2D
+0.0.10.in-addr.arpa.   IN SOA nuc-00-01.homelab.kubernerdes.com. root.homelab.kubernerdes.com. (
+                        2026040101	; serial
+                        1D              ; refresh
+                        2H              ; retry
+                        1W              ; expiry
+                        2D )            ; minimum
+
+                        IN NS           nuc-00-01.homelab.kubernerdes.com.
+                        IN NS           nuc-00-02.homelab.kubernerdes.com.
+
+1	IN	PTR	gateway.homelab.kubernerdes.com.
+2	IN	PTR	cisco-sg300-28.homelab.kubernerdes.com.
+3	IN	PTR	airport-extreme.homelab.kubernerdes.com.
+8	IN	PTR	nuc-00-01.homelab.kubernerdes.com.
+9	IN	PTR	nuc-00-02.homelab.kubernerdes.com.
+10	IN	PTR	nuc-00.homelab.kubernerdes.com.
+12	IN	PTR	librenms.homelab.kubernerdes.com.
+20	IN	PTR	glkvm.homelab.kubernerdes.com.
+
+; Load Balancer
+93	IN	PTR	nuc-00-03.homelab.kubernerdes.com.
+
+; Harvester Edge Cluster
+100	IN	PTR	harvester.homelab.kubernerdes.com.
+101	IN	PTR	nuc-01.homelab.kubernerdes.com.
+102	IN	PTR	nuc-02.homelab.kubernerdes.com.
+103	IN	PTR	nuc-03.homelab.kubernerdes.com.
+111	IN	PTR	nuc-01-kvm.homelab.kubernerdes.com.
+112	IN	PTR	nuc-02-kvm.homelab.kubernerdes.com.
+113	IN	PTR	nuc-03-kvm.homelab.kubernerdes.com.
+
+; HAProxy VIP
+193	IN	PTR	nuc-00-03-vip.homelab.kubernerdes.com.
+
+; Rancher Manager Cluster
+210	IN	PTR	rancher.homelab.kubernerdes.com.
+211	IN	PTR	rancher-01.homelab.kubernerdes.com.
+212	IN	PTR	rancher-02.homelab.kubernerdes.com.
+213	IN	PTR	rancher-03.homelab.kubernerdes.com.
+
+; Observability Cluster
+220	IN	PTR	observability.homelab.kubernerdes.com.
+221	IN	PTR	observability-01.homelab.kubernerdes.com.
+222	IN	PTR	observability-02.homelab.kubernerdes.com.
+223	IN	PTR	observability-03.homelab.kubernerdes.com.
+
+; Applications Cluster
+230	IN	PTR	apps.homelab.kubernerdes.com.
+231	IN	PTR	apps-01.homelab.kubernerdes.com.
+232	IN	PTR	apps-02.homelab.kubernerdes.com.
+233	IN	PTR	apps-03.homelab.kubernerdes.com.
+
+; Other hosts
+251	IN	PTR	spark-e.homelab.kubernerdes.com.

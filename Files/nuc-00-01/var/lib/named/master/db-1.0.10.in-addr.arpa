@@ -1,0 +1,10 @@
+$TTL 2D
+1.0.10.in-addr.arpa.   IN SOA nuc-00-01.homelab.kubernerdes.com. root.homelab.kubernerdes.com. (
+                        2026040101	; serial
+                        1D              ; refresh
+                        2H              ; retry
+                        1W              ; expiry
+                        2D )            ; minimum
+
+                        IN NS           nuc-00-01.homelab.kubernerdes.com.
+                        IN NS           nuc-00-02.homelab.kubernerdes.com.

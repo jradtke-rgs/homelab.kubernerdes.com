@@ -1,0 +1,22 @@
+$TTL 2D
+3.0.10.in-addr.arpa.   IN SOA nuc-00-01.homelab.kubernerdes.com. root.homelab.kubernerdes.com. (
+                        2026040101	; serial
+                        1D              ; refresh
+                        2H              ; retry
+                        1W              ; expiry
+                        2D )            ; minimum
+
+                        IN NS           nuc-00-01.homelab.kubernerdes.com.
+                        IN NS           nuc-00-02.homelab.kubernerdes.com.
+
+; DHCP pool 10.0.3.0/24
+1	IN	PTR	dhcp-1.homelab.kubernerdes.com.
+2	IN	PTR	dhcp-2.homelab.kubernerdes.com.
+3	IN	PTR	dhcp-3.homelab.kubernerdes.com.
+4	IN	PTR	dhcp-4.homelab.kubernerdes.com.
+5	IN	PTR	dhcp-5.homelab.kubernerdes.com.
+6	IN	PTR	dhcp-6.homelab.kubernerdes.com.
+7	IN	PTR	dhcp-7.homelab.kubernerdes.com.
+8	IN	PTR	dhcp-8.homelab.kubernerdes.com.
+9	IN	PTR	dhcp-9.homelab.kubernerdes.com.
+10	IN	PTR	dhcp-10.homelab.kubernerdes.com.

@@ -1,0 +1,152 @@
+#!/bin/bash
+
+# nuc-00-01 is another "infrastructure node" - it will run: bind, dhcp, tftp, http
+
+# build box with minimal with SSH port open
+
+# su -
+zypper --non-interactive in sudo vim wget curl
+echo 'mansible  ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/mansible-nopasswd-all
+
+# Install DHCP/DNS using the following pattern:
+zypper --non-interactive in -t pattern dhcp_dns_server
+
+# TODO: figure out where to download a good/valid version of ipxe.efi
+# Install TFTP and ipxe.efi
+case $(uname -n) in
+  nuc-00-01)
+    # Install tftp
+    zypper --non-interactive in tftp
+    # Download to specific location
+    wget -O /srv/tftpboot/ipxe.efi https://boot.netboot.xyz/ipxe/netboot.xyz.efi
+  ;;
+esac
+
+# THESE NO LONGER WORK
+# wget -O /srv/tftpboot/ipxe.efi https://boot.ipxe.org/ipxe.efi
+# wget -O /srv/tftpboot/ipxe.efi https://boot.ipxe.org/ipxe.efi-x86_64
+# wget -O /srv/tftpboot/ipxe.efi https://github.com/ipxe/ipxe/releases/latest/download/ipxe.efi
+
+#### #### ####
+## Setup BIND 
+zypper --non-interactive in bind-utils
+cp /etc/named.conf /etc/named.conf.$(date +%F)
+# This is fugly
+curl -o /etc/named.conf https://raw.githubusercontent.com/jradtke-rgs/homelab.kubernerdes.com/refs/heads/main/Files/$(uname -n)_etc_named.conf
+
+case $(uname -n) in 
+  nuc-00-01)
+    for FILE in homelab.kubernerdes.com db-12.10.10.in-addr.arpa db-13.10.10.in-addr.arpa db-14.10.10.in-addr.arpa db-15.10.10.in-addr.arpa
+    do
+      curl -o /var/lib/named/master/$FILE https://raw.githubusercontent.com/jradtke-rgs/homelab.kubernerdes.com/refs/heads/main/Files/$FILE
+    done
+  ;;
+esac
+
+chown -R root:root /var/lib/named/master/*
+#chmod 755 /var/lib/named/master; chmod 744 /var/lib/named/master/*
+systemctl enable named --now
+
+#### #### ####
+## Setup DHCP
+case $(uname -n) in 
+  nuc-00-01)
+    cp /etc/dhcpd.conf /etc/dhcpd.conf.$(date +%F)
+    curl -o /etc/dhcpd.conf https://raw.githubusercontent.com/jradtke-rgs/homelab.kubernerdes.com/refs/heads/main/Files/nuc-00-01_etc_dhcpd.conf
+    mkdir /etc/dhcpd.d/
+    curl -o /etc/dhcpd.d/dhcpd-hosts.conf https://raw.githubusercontent.com/jradtke-rgs/homelab.kubernerdes.com/refs/heads/main/Files/nuc-00-01_etc_dhcpd.d_dhcpd-hosts.conf
+
+  sed -i -e 's/DHCPD_INTERFACE=""/DHCPD_INTERFACE="eth0"/g' /etc/sysconfig/dhcpd
+  # For some reason, dhcpd was not configured correctly, thereby preventing it from starting at boot
+  sudo mkdir -p /etc/systemd/system/dhcpd.service.d && \
+  printf '[Unit]\nRequires=network-online.target\nAfter=network-online.target\n' | sudo tee /etc/systemd/system/dhcpd.service.d/override.conf && \
+  sudo systemctl daemon-reload
+
+  systemctl enable dhcpd --now
+  systemctl status dhcpd
+  ;;
+esac 
+
+#### #### ####
+## Install/configure SNMP
+zypper install net-snmp
+mv /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.$(date +%F)
+curl -o /etc/snmp/snmpd.conf https:....
+systemctl enable snmpd.service --now
+
+#### #### ####
+### Install kubectl
+sudo tee /etc/zypp/repos.d/kubernetes.repo <<EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repomd.xml.key
+EOF
+sudo zypper refresh
+sudo zypper --non-interactive in kubectl
+
+#### #### ####
+# Manage Firewall
+TCP_PORTS="53 80 443"
+for PORT in $TCP_PORTS
+do 
+  firewall-cmd --permanent --zone=public --add-port=${PORT}/tcp
+done
+UDP_PORTS="67 68 69 4011"
+for PORT in $UDP_PORTS
+do
+  firewall-cmd --permanent --zone=public --add-port=${PORT}/udp
+done
+
+SERVICES="http https dns dhcp snmp"
+for SERVICE in $SERVICES
+do 
+  firewall-cmd --permanent --zone=public --add-service=$SERVICE
+done
+
+firewall-cmd --reload
+firewall-cmd --list-all
+
+#### #### ####
+### Install Ansible (future use)
+zypper -n in ansible
+
+#### #### ####
+## nuc-00-02 specific: fail2ban + SSH hardening
+case $(uname -n) in
+  nuc-00-02)
+    # Install fail2ban
+    zypper --non-interactive in fail2ban
+
+    # Configure fail2ban jail for SSH (firewalld backend via rich rules)
+    cat > /etc/fail2ban/jail.d/sshd.conf <<'EOF'
+[sshd]
+enabled  = true
+port     = ssh
+filter   = sshd
+backend  = systemd
+maxretry = 5
+bantime  = 3600
+findtime = 600
+action   = firewallcmd-rich-rules[actiontype=<multiport>]
+EOF
+
+    systemctl enable fail2ban --now
+
+    # Harden SSH: key-based authentication only
+    sed -i \
+      -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' \
+      -e 's/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/' \
+      -e 's/^#\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' \
+      -e 's/^#\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' \
+      /etc/ssh/sshd_config
+
+    # Append directives if they were not present at all
+    grep -q '^PasswordAuthentication' /etc/ssh/sshd_config || echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
+    grep -q '^PubkeyAuthentication'   /etc/ssh/sshd_config || echo 'PubkeyAuthentication yes'  >> /etc/ssh/sshd_config
+
+    systemctl restart sshd
+  ;;
+esac
