@@ -21,6 +21,7 @@ install:
   management_interface:
     interfaces:
       - name: eno1
+        hwAddr: "88:ae:dd:0b:90:70"
     default_route: true
     method: static
     ip: 10.0.0.101
@@ -34,3 +35,12 @@ install:
   iso_url: http://10.0.0.10/harvester/v1.7.1/harvester-v1.7.1-amd64.iso
   vip: 10.0.0.100
   vip_mode: static
+sans:
+  - harvester.homelab.kubernerdes.com
+  - 10.0.0.100
+  - nuc-01.homelab.kubernerdes.com
+  - nuc-02.homelab.kubernerdes.com
+  - nuc-03.homelab.kubernerdes.com
+  - 10.0.0.101
+  - 10.0.0.102
+  - 10.0.0.103
