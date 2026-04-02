@@ -21,12 +21,15 @@ install:
   mode: join
   management_interface:
     interfaces:
-      - name: enp86s0
+      - name: eno1
     default_route: true
     method: static
     ip: 10.0.0.103
     subnet_mask: 255.255.252.0
     gateway: 10.0.0.1
+    bond_options:
+      mode: active-backup
+      miimon: 100
   device: /dev/sda
   data_disk: /dev/nvme0n1
   iso_url: http://10.0.0.10/harvester/v1.7.1/harvester-v1.7.1-amd64.iso
