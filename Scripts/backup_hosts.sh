@@ -109,10 +109,6 @@ HOST_FILES_REF=(
 
 ALL_HOSTS=(nuc-00 nuc-00-01 nuc-00-02 nuc-00-03)
 TARGETS=("${@:-${ALL_HOSTS[@]}}")
-# If no args provided, default to all hosts
-if [ "$#" -eq 0 ]; then
-  TARGETS=("${ALL_HOSTS[@]}")
-fi
 
 total_errors=0
 for host in "${TARGETS[@]}"; do
@@ -134,12 +130,12 @@ if [ "$total_errors" -gt 0 ]; then
   exit 1
 fi
 
-cleanup_files() {
+# Strip passwords from haproxy config only if nuc-00-03 was backed up
+if [[ " ${TARGETS[*]} " == *" nuc-00-03 "* ]]; then
   echo ""
   echo "Note: cleansing files"
   echo ""
-  sed -i -e 's/\(\$5\$\).*/\1/'  ../Files/nuc-00-03/etc/haproxy/haproxy.cfg # Strip passwords from haproxy
-}
+  sed -i -e 's/\(\$5\$\).*/\1/' ../Files/nuc-00-03/etc/haproxy/haproxy.cfg
+fi
 
-cleanup_files
 echo "All backups completed successfully."
