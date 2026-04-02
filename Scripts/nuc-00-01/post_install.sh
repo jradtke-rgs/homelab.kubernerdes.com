@@ -2,8 +2,7 @@
 
 # nuc-00-01 post_install.sh — Infra VM: DNS, DHCP, TFTP/PXE
 #
-# Run as root (or via sudo su -) after a fresh OpenSUSE Leap 15.6 install.
-# Cut-and-paste execution; review each section before proceeding.
+# Run as: mansible - after a fresh OpenSUSE Leap 15.6 install.
 #
 # Services installed:
 #   BIND   — authoritative DNS for homelab.kubernerdes.com
@@ -13,77 +12,87 @@
 #
 # Config files are pulled from the admin node web root during install,
 # then managed in-place (or via this repo) going forward.
-
-ADMIN_NODE_IP=10.0.0.10
-REPO_BASE="http://${ADMIN_NODE_IP}/homelab.kubernerdes.com"
+REPO_SERVER=http://10.0.0.10/
+REPO_NAME=homelab.kubernerdes.com
+REPO_BASE=${REPO_SERVER}${REPO_NAME}
+echo "# NOTE: using $REPO_BASE to pull bits"
+curl ${REPO_BASE}/README.md
 
 # ---------------------------------------------------------------------------
-# Base packages
+# Base packages (sudo *should* already be installed, but...)
 # ---------------------------------------------------------------------------
-zypper --non-interactive install sudo vim wget curl
+sudo zypper --non-interactive install sudo 
 
 MYUSER=$(whoami)
-echo "${MYUSER} ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/${MYUSER}-nopasswd-all
+echo "${MYUSER} ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/${MYUSER}-nopasswd-all
+
+# Install other essential packages
+sudo zypper --non-interactive install vim wget curl
 
 # ---------------------------------------------------------------------------
 # DNS + DHCP pattern (BIND + ISC dhcpd)
 # ---------------------------------------------------------------------------
-zypper --non-interactive install -t pattern dhcp_dns_server
-zypper --non-interactive install bind-utils
+sudo zypper --non-interactive install -t pattern dhcp_dns_server
+sudo zypper --non-interactive install bind-utils
 
 # ---------------------------------------------------------------------------
 # TFTP + iPXE EFI binary
 # ---------------------------------------------------------------------------
 case $(uname -n) in
   nuc-00-01)
-    zypper --non-interactive install tftp
-    mkdir -p /srv/tftpboot
-    wget -O /srv/tftpboot/ipxe.efi https://boot.netboot.xyz/ipxe/netboot.xyz.efi
+    sudo zypper --non-interactive install tftp
+    sudo mkdir -p /srv/tftpboot
+    sudo wget -O /srv/tftpboot/ipxe.efi https://boot.netboot.xyz/ipxe/netboot.xyz.efi
   ;;
 esac
 
 # ---------------------------------------------------------------------------
 # BIND configuration
 # ---------------------------------------------------------------------------
-cp /etc/named.conf /etc/named.conf.$(date +%F)
-curl -o /etc/named.conf ${REPO_BASE}/Files/nuc-00-01/etc/named.conf
+sudo cp /etc/named.conf /etc/named.conf.$(date +%F)
+sudo curl -o /etc/named.conf ${REPO_BASE}/Files/$(uname -n)/etc/named.conf
 
-mkdir -p /var/lib/named/master /var/lib/named/slave /var/lib/named/dyn
-for ZONE_FILE in \
-  db.homelab.kubernerdes.com \
-  db-0.0.10.in-addr.arpa \
-  db-1.0.10.in-addr.arpa \
-  db-2.0.10.in-addr.arpa \
-  db-3.0.10.in-addr.arpa
-do
-  curl -o /var/lib/named/master/${ZONE_FILE} \
-    ${REPO_BASE}/Files/nuc-00-01/var/lib/named/master/${ZONE_FILE}
-done
+sudo mkdir -p /var/lib/named/master /var/lib/named/slave /var/lib/named/dyn
+case $(uname -n) in
+  nuc-00-01)
+    echo "blah"
+    for ZONE_FILE in \
+      db.homelab.kubernerdes.com \
+      db-0.0.10.in-addr.arpa \
+      db-1.0.10.in-addr.arpa \
+      db-2.0.10.in-addr.arpa \
+      db-3.0.10.in-addr.arpa
+      do
+        sudo curl -o /var/lib/named/master/${ZONE_FILE} \
+          ${REPO_BASE}/Files/nuc-00-01/var/lib/named/master/${ZONE_FILE}
+        named-checkzone /var/lib/named/master/${ZONE_FILE}
+      done
+  ;;
+esac
 
-chown -R root:root /var/lib/named/master/
-systemctl enable named --now
-systemctl status named
+sudo systemctl enable named --now
+sudo systemctl status named
 
 # ---------------------------------------------------------------------------
 # DHCP
 # ---------------------------------------------------------------------------
 case $(uname -n) in
   nuc-00-01)
-    cp /etc/dhcpd.conf /etc/dhcpd.conf.$(date +%F)
-    curl -o /etc/dhcpd.conf ${REPO_BASE}/Files/nuc-00-01/etc/dhcpd.conf
-    mkdir -p /etc/dhcpd.d/
-    curl -o /etc/dhcpd.d/dhcpd-hosts.conf \
+    sudo cp /etc/dhcpd.conf /etc/dhcpd.conf.$(date +%F)
+    sudo curl -o /etc/dhcpd.conf ${REPO_BASE}/Files/nuc-00-01/etc/dhcpd.conf
+    sudo mkdir -p /etc/dhcpd.d/
+    sudo curl -o /etc/dhcpd.d/dhcpd-hosts.conf \
       ${REPO_BASE}/Files/nuc-00-01/etc/dhcpd.d/dhcpd-hosts.conf
 
-    sed -i -e 's/DHCPD_INTERFACE=""/DHCPD_INTERFACE="eth0"/g' /etc/sysconfig/dhcpd
+    sudo sed -i -e 's/DHCPD_INTERFACE=""/DHCPD_INTERFACE="eth0"/g' /etc/sysconfig/dhcpd
 
-    mkdir -p /etc/systemd/system/dhcpd.service.d
+    sudo mkdir -p /etc/systemd/system/dhcpd.service.d
     printf '[Unit]\nRequires=network-online.target\nAfter=network-online.target\n' \
-      | tee /etc/systemd/system/dhcpd.service.d/override.conf
-    systemctl daemon-reload
+      | sudo tee /etc/systemd/system/dhcpd.service.d/override.conf
+    sudo systemctl daemon-reload
 
-    systemctl enable dhcpd --now
-    systemctl status dhcpd
+    sudo systemctl enable dhcpd --now
+    sudo systemctl status dhcpd
   ;;
 esac
 
@@ -94,26 +103,28 @@ TCP_PORTS="53 80 443"
 UDP_PORTS="53 67 68 69 4011"
 SERVICES="http https dns dhcp tftp"
 
-for PORT in $TCP_PORTS; do firewall-cmd --permanent --zone=public --add-port=${PORT}/tcp; done
-for PORT in $UDP_PORTS; do firewall-cmd --permanent --zone=public --add-port=${PORT}/udp; done
-for SVC  in $SERVICES;  do firewall-cmd --permanent --zone=public --add-service=${SVC}; done
+for PORT in $TCP_PORTS; do sudo firewall-cmd --permanent --zone=public --add-port=${PORT}/tcp; done
+for PORT in $UDP_PORTS; do sudo firewall-cmd --permanent --zone=public --add-port=${PORT}/udp; done
+for SVC  in $SERVICES;  do sudo firewall-cmd --permanent --zone=public --add-service=${SVC}; done
 
-firewall-cmd --reload
-firewall-cmd --list-all
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-all
+
+host -l homelab.kubernerdes.com
 
 # ---------------------------------------------------------------------------
 # kubectl
 # ---------------------------------------------------------------------------
-tee /etc/zypp/repos.d/kubernetes.repo << 'EOF'
+sudo tee /etc/zypp/repos.d/kubernetes.repo << 'EOF'
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repomd.xml.key
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/repomd.xml.key
 EOF
-zypper refresh
-zypper --non-interactive install kubectl
+sudo zypper refresh
+sudo zypper --non-interactive install kubectl
 
 # ---------------------------------------------------------------------------
 # Ansible (for future use)
