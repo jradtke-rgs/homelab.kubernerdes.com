@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-KUBECONFIG="${KUBECONFIG:-~/.kube/homelab-applications.kubeconfig}"
+KUBECONFIG="${KUBECONFIG:-~/.kube/homelab-apps.kubeconfig}"
 export KUBECONFIG
 
 ##############################################################################
