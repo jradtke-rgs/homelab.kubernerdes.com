@@ -25,7 +25,7 @@ SSH_OPTS="-i ${SSH_KEY} -o StrictHostKeyChecking=no -o ConnectTimeout=10"
 # ---------------------------------------------------------------------------
 echo "==> Fetching kubeconfig from rancher-01..."
 mkdir -p "${HOME}/.kube"
-scp ${SSH_OPTS} sles@rancher-01:.kube/config "${KUBECONFIG_PATH}"
+scp ${SSH_OPTS} sles@10.0.0.211:.kube/config "${KUBECONFIG_PATH}"
 sed -i -e "s/127.0.0.1/${RKE2_VIP}/g" "${KUBECONFIG_PATH}"
 export KUBECONFIG="${KUBECONFIG_PATH}"
 

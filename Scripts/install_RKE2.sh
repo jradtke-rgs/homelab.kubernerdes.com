@@ -153,64 +153,22 @@ systemctl enable rke2-server.service --now
 # ---------------------------------------------------------------------------
 # Post-install kubeconfig setup
 #
-# SL-Micro: install a one-shot systemd unit to run after the mandatory
-#           transactional-update reboot. Script continues after scheduling.
-# Other:    run inline — no reboot needed.
+# SL-Micro: copy the postboot script to /var (survives snapshot reboot) and
+#           reboot. After reboot run install_RKE2_postboot.sh manually if it
+#           did not run automatically.
+# Other:    run the postboot script inline — no reboot needed.
 # ---------------------------------------------------------------------------
-setup_kubeconfig() {
-  source /root/.rke2.vars
-  mkdir -p /root/.kube
-  cp /etc/rancher/rke2/rke2.yaml /root/.kube/config
-  chown root /root/.kube/config
-  sed -i -e "s/127.0.0.1/${MY_RKE2_VIP}/g" /root/.kube/config
-
-  mkdir -p ~sles/.kube 2>/dev/null || true
-  cp /root/.kube/config ~sles/.kube/config 2>/dev/null || true
-  chown -R sles ~sles/.kube/ 2>/dev/null || true
-
-  export KUBECONFIG=/root/.kube/config
-  kubectl get nodes
-}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+POSTBOOT_SCRIPT="${SCRIPT_DIR}/install_RKE2_postboot.sh"
 
 . /etc/*release* 2>/dev/null || true
 case ${NAME:-} in
   SL-Micro)
-    echo "==> SL-Micro detected — scheduling kubeconfig setup for post-reboot"
+    echo "==> SL-Micro detected — copying postboot script and rebooting"
+    cp "${POSTBOOT_SCRIPT}" /var/lib/install_RKE2_postboot.sh
+    chmod 0700 /var/lib/install_RKE2_postboot.sh
 
-    # Write a self-contained post-boot helper
-    cat << 'POSTBOOT' > /usr/local/sbin/rke2-postboot
-#!/bin/bash
-set -euo pipefail
-source /root/.rke2.vars
-mkdir -p /root/.kube
-cp /etc/rancher/rke2/rke2.yaml /root/.kube/config
-chown root /root/.kube/config
-sed -i -e "s/127.0.0.1/${MY_RKE2_VIP}/g" /root/.kube/config
-mkdir -p ~sles/.kube 2>/dev/null || true
-cp /root/.kube/config ~sles/.kube/config 2>/dev/null || true
-chown -R sles ~sles/.kube/ 2>/dev/null || true
-systemctl disable rke2-postboot.service
-rm -f /usr/local/sbin/rke2-postboot /etc/systemd/system/rke2-postboot.service
-echo "==> rke2-postboot: kubeconfig configured."
-POSTBOOT
-    chmod 0700 /usr/local/sbin/rke2-postboot
-
-    cat << 'UNIT' > /etc/systemd/system/rke2-postboot.service
-[Unit]
-Description=RKE2 post-reboot kubeconfig setup (runs once)
-After=rke2-server.service
-Requires=rke2-server.service
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/rke2-postboot
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-UNIT
-    systemctl enable rke2-postboot.service
-
+    echo "==> After reboot, run: sudo bash /var/lib/install_RKE2_postboot.sh"
     echo "==> Rebooting to commit transactional update..."
     case $(uname -n) in
       *-01) sleep 5 ;;
@@ -219,6 +177,6 @@ UNIT
     shutdown -r now
   ;;
   *)
-    setup_kubeconfig
+    bash "${POSTBOOT_SCRIPT}"
   ;;
 esac
