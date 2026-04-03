@@ -1,6 +1,6 @@
-# Kubernerdes Enclave
+# Kubernerdes Homelab
 
-> A self-contained Kubernetes enclave built on Intel NUCs, powered by [Rancher Government Solutions (RGS)](https://ranchergovernment.com/) Carbide.
+> A self-contained Kubernetes homelab built on Intel NUCs, powered by [Rancher Government Solutions (RGS)](https://ranchergovernment.com/) Carbide.
 
 This repository contains the architecture overview, scripts, and implementation steps for deploying the RGS stack on small form-factor hardware (Intel NUCs). It is currently a collection of scripts, notes, and references — and will evolve into a more structured guide over time.
 
@@ -17,13 +17,13 @@ This repository contains the architecture overview, scripts, and implementation 
 TODO: Add a table/matrix of things that have been migrated from community to carbide.
 
 Eventually this repo will be the technical steps and there will be an associated "docs" repo that provides the guidance and details of the tasks and steps provided here.  
-[Documentation Repo](https://github.com/jradtke-rgs/docs.enclave.kubernerdes.com/)   
-[Documentation Site - Rendered](https://jradtke-rgs.github.io/docs.enclave.kubernerdes.com/)  
+[Documentation Repo](https://github.com/jradtke-rgs/docs.homelab.kubernerdes.com/)   
+[Documentation Site - Rendered](https://jradtke-rgs.github.io/docs.homelab.kubernerdes.com/)  
 
 ## Goals
 
 * Build a fundamental understanding of deploying RGS Carbide — from acquisition through roll-out
-* Stand up a self-sustaining network enclave consisting of:
+* Stand up a self-sustaining network homelab consisting of:
   * Infrastructure node hosting DNS and PXE build services
   * 3-node Harvester cluster
   * Rancher Manager Server
@@ -72,7 +72,7 @@ The admin host (`nuc-00`) connects to the Internet to pull down the required sof
 
 See the full [Hardware Inventory and Description](./Hardware.md).
 
-![Kubernerdes Enclave Hardware](Images/KubernerdesEnclaveHardware-with_NVIDIA.png)
+![Kubernerdes Homelab Hardware](Images/KubernerdesEnclaveHardware-with_NVIDIA.png)
 
 ## TODO
 

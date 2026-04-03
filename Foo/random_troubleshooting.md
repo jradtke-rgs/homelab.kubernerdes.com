@@ -1,6 +1,6 @@
 # Troubleshooting Reference
 
-A collection of useful commands and procedures for diagnosing common issues in the enclave environment.
+A collection of useful commands and procedures for diagnosing common issues in the homelab environment.
 
 ---
 
@@ -50,10 +50,10 @@ echo “Cluster-IP Range: $(kubectl cluster-info dump | grep -m 1 service-cluste
 ### PXE Boot Traffic Capture
 
 ```bash
- sudo tcpdump -i eth0 -n -vv port 67 or port 68 or port 69 or port 80 and host 10.10.12.101 or host 10.10.12.102 or host 10.10.12.103
+ sudo tcpdump -i eth0 -n -vv port 67 or port 68 or port 69 or port 80 and host 10.0.0.101 or host 10.0.0.102 or host 10.0.0.103
 
 tcpdump -i <interface> -n -vv \
- sudo tcpdump -i eth0 -n -vv port 67 or port 68 or port 69 or port 80 and host 10.10.12.101 or host 10.10.12.102 or host 10.10.12.103 \
+ sudo tcpdump -i eth0 -n -vv port 67 or port 68 or port 69 or port 80 and host 10.0.0.101 or host 10.0.0.102 or host 10.0.0.103 \
   -w /tmp/pxe-boot.pcap
 tail -f /var/log/apache2/access_log
 ```
@@ -114,10 +114,10 @@ openssl s_client \
 ### Compare certificate behavior — IP vs. hostname (SNI)
 
 ```bash
-echo | openssl s_client -connect 10.10.12.100:443 > /tmp/ssl_output.0
-echo | openssl s_client -connect 10.10.12.100:443 -servername harvester-edge.enclave.kubernerdes.com > /tmp/ssl_output.1
+echo | openssl s_client -connect 10.0.0.100:443 > /tmp/ssl_output.0
+echo | openssl s_client -connect 10.0.0.100:443 -servername harvester-edge.homelab.kubernerdes.com > /tmp/ssl_output.1
 sdiff /tmp/ssl_output.0 /tmp/ssl_output.1
-echo | openssl s_client -connect 10.10.12.100:443 -showcerts > /tmp/ssl_output.0
+echo | openssl s_client -connect 10.0.0.100:443 -showcerts > /tmp/ssl_output.0
 ```
 
 ---
@@ -146,8 +146,8 @@ journalctl -xeu rke2-server.service
 
 ```bash
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
-openssl s_client -connect 10.10.12.121:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
-openssl s_client -connect 10.10.12.120:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.2
+openssl s_client -connect 10.0.0.121:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
+openssl s_client -connect 10.0.0.120:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.2
 ```
 
 ### Discover Service ClusterIP CIDR and Pod CIDR

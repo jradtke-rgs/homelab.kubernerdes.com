@@ -39,7 +39,7 @@ fi
 # Idempotency check — do not overwrite an existing CA
 # ---------------------------------------------------------------------------
 if [[ -f "${CA_DIR}/ca.crt" && -f "${CA_DIR}/ca.key" ]]; then
-  echo "==> Enclave root CA already exists at ${CA_DIR} — nothing to do."
+  echo "==> Homelab root CA already exists at ${CA_DIR} — nothing to do."
   echo "    Subject: $(openssl x509 -in "${CA_DIR}/ca.crt" -noout -subject)"
   echo "    Expires: $(openssl x509 -in "${CA_DIR}/ca.crt" -noout -enddate)"
   exit 0

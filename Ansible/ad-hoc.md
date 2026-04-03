@@ -1,6 +1,6 @@
 # Ansible Ad-Hoc Commands
 
-A collection of commonly used ad-hoc Ansible commands for managing the enclave hosts.
+A collection of commonly used ad-hoc Ansible commands for managing the homelab hosts.
 
 ## Basic Shell Commands
 

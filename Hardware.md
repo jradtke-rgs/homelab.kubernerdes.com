@@ -1,6 +1,6 @@
 # Hardware Inventory
 
-This page documents the physical hardware, bill of materials, and network switch layout for the Kubernerdes Enclave.
+This page documents the physical hardware, bill of materials, and network switch layout for the Kubernerdes Homelab.
 
 ## Systems
 

@@ -4,7 +4,7 @@ echo -e "\e[1;32m
     (@@)_____
     (oo)    /|\ 
       | |--/ | *
-      w w w  w              Kubernerdes Lab Enclave
+      w w w  w              Kubernerdes Lab Homelab
 \e[0m"
 echo -e "\e[1;32m========================================================\e[0m"
 echo -e " Welcome to your \e[1;32m openSUSE LEAP \e[0m system!"
