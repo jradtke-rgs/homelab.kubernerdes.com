@@ -1,59 +1,57 @@
-# 10_install_rancher_manager.sh — Deploy RKE2 + Rancher Manager Server
+#!/bin/bash
+set -euo pipefail
+
+# 10_install_rancher_manager.sh — Deploy cert-manager + Rancher Manager Server
 #
-# Not intended to be run as a script — cut and paste sections as needed.
-# Run from the admin node (nuc-00) or any host with kubectl + helm access.
-#
+# Run from the admin node (nuc-00) after RKE2 is up on all 3 rancher nodes.
 # Prerequisites:
-#   - 3 SL-Micro VMs deployed on Harvester (rancher-01/02/03)
-#   - RKE2 v1.34.x installed on all 3 VMs (see Scripts/install_RKE2.sh)
-#   - KUBECONFIG for the rancher cluster copied to ~/.kube/homelab-rancher.kubeconfig
-#   - Internet access from the cluster nodes (community install pulls from public registries)
+#   - RKE2 installed on rancher-01/02/03 (Scripts/install_RKE2.sh)
+#   - kubectl and helm available on this host
+#   - SSH access to rancher-01 via sles@rancher-01
 #
 # Reference:
 #   https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli
 
-# ---------------------------------------------------------------------------
-# Deploy the 3 Rancher VMs on Harvester
-# ---------------------------------------------------------------------------
-# Create 3 VMs in Harvester UI (or via API):
-#   - OS: SL-Micro 6.1 (ISO served by nuc-00 or downloaded directly)
-#   - CPU: 4 vCPU, RAM: 8GB, Disk: 50GB
-#   - Hostnames: rancher-01, rancher-02, rancher-03
-#   - IPs: 10.0.0.211, .212, .213  (static, per DNS zone)
-#
-# Then run Scripts/install_RKE2.sh on each VM (see that script for details).
+CERTMGR_VERSION="v1.19.2"
+RANCHER_VERSION="2.13.3"
+RANCHER_HOSTNAME="rancher.homelab.kubernerdes.com"
+RKE2_VIP="10.0.0.210"
+KUBECONFIG_PATH="${HOME}/.kube/homelab-rancher.kubeconfig"
+SSH_KEY="${HOME}/.ssh/id_rsa-kubernerdes"
+SSH_OPTS="-i ${SSH_KEY} -o StrictHostKeyChecking=no -o ConnectTimeout=10"
 
 # ---------------------------------------------------------------------------
-# Retrieve kubeconfig from rancher-01 after RKE2 is up
+# Retrieve kubeconfig from rancher-01
 # ---------------------------------------------------------------------------
-scp sles@rancher-01:.kube/config ~/.kube/homelab-rancher.kubeconfig
-sed -i -e 's/127.0.0.1/10.0.0.210/g' ~/.kube/homelab-rancher.kubeconfig   # use VIP
-export KUBECONFIG=~/.kube/homelab-rancher.kubeconfig
+echo "==> Fetching kubeconfig from rancher-01..."
+mkdir -p "${HOME}/.kube"
+scp ${SSH_OPTS} sles@rancher-01:.kube/config "${KUBECONFIG_PATH}"
+sed -i -e "s/127.0.0.1/${RKE2_VIP}/g" "${KUBECONFIG_PATH}"
+export KUBECONFIG="${KUBECONFIG_PATH}"
+
+echo "==> Cluster nodes:"
 kubectl get nodes
 
 # ---------------------------------------------------------------------------
-# cert-manager — public OCI registry (quay.io/jetstack)
-# NOTE: Rancher 2.13.x supports Kubernetes <= 1.34.x.
-#       RKE2 must be pinned to v1.34.x (see install_RKE2.sh).
+# cert-manager
 # ---------------------------------------------------------------------------
-CERTMGR_VERSION="v1.19.2"
-RANCHER_VERSION="2.13.3"        # NOTE: no leading 'v' for helm chart version
-RANCHER_HOSTNAME="rancher.homelab.kubernerdes.com"
-
+echo "==> Installing cert-manager ${CERTMGR_VERSION}..."
 helm upgrade --install cert-manager oci://quay.io/jetstack/charts/cert-manager \
   --namespace cert-manager \
   --create-namespace \
-  --version ${CERTMGR_VERSION} \
+  --version "${CERTMGR_VERSION}" \
   --set crds.enabled=true
 
-kubectl -n cert-manager rollout status deploy/cert-manager
+kubectl -n cert-manager rollout status deploy/cert-manager --timeout=120s
 
 # ---------------------------------------------------------------------------
-# Rancher Manager — community chart from releases.rancher.com
+# Rancher Manager
 # ---------------------------------------------------------------------------
+echo "==> Adding rancher-latest helm repo..."
 helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
 helm repo update
 
+echo "==> Installing Rancher ${RANCHER_VERSION}..."
 helm upgrade --install rancher rancher-latest/rancher \
   --version "${RANCHER_VERSION}" \
   --namespace cattle-system \
@@ -62,18 +60,17 @@ helm upgrade --install rancher rancher-latest/rancher \
   --set replicas=3 \
   --set bootstrapPassword=ChangeMe-RancherBootstrap
 
-kubectl -n cattle-system rollout status deploy/rancher
+kubectl -n cattle-system rollout status deploy/rancher --timeout=300s
 
 # ---------------------------------------------------------------------------
-# Retrieve bootstrap URL
+# Print access info
 # ---------------------------------------------------------------------------
-echo
-echo "Rancher UI: https://${RANCHER_HOSTNAME}/dashboard/?setup=$(kubectl get secret \
-  --namespace cattle-system bootstrap-secret \
-  -o go-template='{{.data.bootstrapPassword|base64decode}}')"
-
 BOOTSTRAP_PASSWORD=$(kubectl get secret --namespace cattle-system bootstrap-secret \
   -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}')
-echo "Bootstrap password: ${BOOTSTRAP_PASSWORD}"
 
-exit 0
+echo
+echo "========================================"
+echo " Rancher Manager is up!"
+echo " URL:      https://${RANCHER_HOSTNAME}/dashboard/?setup=${BOOTSTRAP_PASSWORD}"
+echo " Password: ${BOOTSTRAP_PASSWORD}"
+echo "========================================"
