@@ -71,13 +71,13 @@ kubectl get pods -n ${NAMESPACE}
 
 # #########################################
 ## MICROSERVICES DEMO APP (Google Online Boutique)
-## Reference: https://github.com/GoogleCloudPlatform/microservices-demo
+## Reference: https://github.com/jradtke-rgs/microservices-demo
 ## A realistic multi-service app — good for NeuVector network policy/CVE demos
 # #########################################
 NAMESPACE=microservices-demo
 kubectl create namespace ${NAMESPACE}
 
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/main/release/kubernetes-manifests.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/jradtke-rgs/microservices-demo/main/release/kubernetes-manifests.yaml
 
 kubectl wait --for=condition=Available deployment --all -n ${NAMESPACE} --timeout=300s
 kubectl get pods -n ${NAMESPACE}
