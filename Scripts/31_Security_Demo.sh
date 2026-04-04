@@ -70,8 +70,43 @@ kubectl wait --for=condition=Ready pod/rancher-new -n ${NAMESPACE} --timeout=120
 kubectl get pods -n ${NAMESPACE}
 
 # #########################################
+## MICROSERVICES DEMO APP (Google Online Boutique)
+## Reference: https://github.com/GoogleCloudPlatform/microservices-demo
+## A realistic multi-service app — good for NeuVector network policy/CVE demos
+# #########################################
+NAMESPACE=microservices-demo
+kubectl create namespace ${NAMESPACE}
+
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/main/release/kubernetes-manifests.yaml
+
+kubectl wait --for=condition=Available deployment --all -n ${NAMESPACE} --timeout=300s
+kubectl get pods -n ${NAMESPACE}
+
+# Expose the frontend via Ingress
+cat << EOF | kubectl apply -f -
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-boutique
+  namespace: ${NAMESPACE}
+spec:
+  rules:
+  - host: online-boutique.applications.homelab.kubernerdes.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+EOF
+
+# #########################################
 ## CLEANUP (when done with the comparison)
 # #########################################
-# kubectl delete namespace cvet-rancher-old cvet-rancher-new
+# kubectl delete namespace cvet-rancher-old cvet-rancher-new microservices-demo
 
 exit 0
