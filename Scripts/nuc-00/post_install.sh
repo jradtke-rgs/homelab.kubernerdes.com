@@ -9,13 +9,12 @@
 # What this does:
 #   1. SSH key + sudo configuration
 #   2. Disable power-saving (server role)
-#   3. Configure second NVMe disk (LVM: libvirt images + www data)
-#   4. Install and configure Apache web server
-#   5. Install libvirt / KVM
-#   6. Create network bridge for VMs
-#   7. Download OpenSUSE Leap 15.6 ISO and mount it for VM installs
-#   8. Deploy infra VMs (nuc-00-01, nuc-00-02)
-#   9. Install tools (git, kubectl)
+#   3. Install and configure Apache web server + PHP
+#   4. Install libvirt / KVM
+#   5. Create network bridge for VMs
+#   6. Download OpenSUSE Leap 15.6 ISO and mount it for VM installs
+#   7. Deploy infra VMs (nuc-00-01, nuc-00-02, nuc-00-03)
+#   8. Install tools (git, kubectl, k9s)
 #
 
 # ---------------------------------------------------------------------------
@@ -45,14 +44,26 @@ mkdir -p ~/.bashrc.d
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
 # ---------------------------------------------------------------------------
-# 4. Web server (Apache) — serves ISOs and this repo
+# 4. Web server (Apache + PHP) — serves ISOs and this repo
 # ---------------------------------------------------------------------------
-sudo zypper --non-interactive install apache2
+sudo zypper --non-interactive install apache2 \
+  apache2-mod_php8 \
+  php8-cli php8-ctype php8-dom php8-iconv php8-openssl \
+  php8-pdo php8-sqlite php8-tokenizer php8-xmlreader php8-xmlwriter
+
+sudo a2enmod php8
 sudo sed -i -e 's/Options None/Options +Indexes/g' /etc/apache2/default-server.conf
 sudo systemctl enable apache2 --now
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --permanent --add-service=https
 sudo firewall-cmd --reload
+
+# Add user to wwwrun group for web root write access
+sudo usermod -a -G wwwrun "${MYUSER}"
+
+# kubeconfigs for kubernerdes.php dashboard
+sudo mkdir -p /srv/www/.kube
+sudo chown "${MYUSER}":wwwrun /srv/www/.kube
 
 # ---------------------------------------------------------------------------
 # 5. Virtualization (libvirt / KVM)
