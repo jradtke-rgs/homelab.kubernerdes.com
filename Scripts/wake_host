@@ -10,9 +10,9 @@ import time
 
 # Hostname to MAC address lookup table
 HOSTS = {
-    "nuc-01": "48:21:0b:65:ce:e5",
-    "nuc-02": "48:21:0b:65:c2:c7",
-    "nuc-03": "48:21:0b:5d:7a:e6",
+    "nuc-01": "88:ae:dd:0b:90:70",
+    "nuc-02": "1c:69:7a:ab:23:50",
+    "nuc-03": "88:ae:dd:0b:af:9c",
     # Add more hosts as needed
 }
 
