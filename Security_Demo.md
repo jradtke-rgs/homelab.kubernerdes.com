@@ -263,17 +263,117 @@ The `curl` log output will resume within one cycle.
 
 ---
 
-## Part 5: Closing the Loop
+## Part 5: WAF (Web Application Firewall) Demo
 
-### Step 11 — Review the Violation Timeline
+NeuVector includes a built-in WAF engine that inspects HTTP/HTTPS payloads at Layer 7 — beyond just "who is talking to whom" and into *what they're saying*. This section demonstrates how WAF rules catch common attack patterns like SQL injection and path traversal, even from within an otherwise-allowed container.
 
-In **Notifications** → **Security Events**, review the two violation events side by side. Point out:
+### Step 11 — Create a WAF Sensor
 
-- **What was attempted** (process, destination, protocol)
+Navigate to **Policy** → **WAF Sensors** and click **Add**.
+
+| Field | Value |
+|-------|-------|
+| **Name** | `aperture-waf` |
+| **Comment** | `Demo WAF sensor for aperture-sci` |
+
+Once the sensor is created, click into it and click **Add Rule** to define patterns:
+
+**Rule 1 — SQL Injection:**
+
+| Field | Value |
+|-------|-------|
+| **Name** | `sql-injection` |
+| **Pattern** | `(?i)(union.*select\|select.*from\|'\s*or\s*'1'\s*=\s*'1\|'\s*or\s*1\s*=\s*1)` |
+| **Context** | `url` |
+
+**Rule 2 — Path Traversal:**
+
+| Field | Value |
+|-------|-------|
+| **Name** | `path-traversal` |
+| **Pattern** | `(\.\./\|%2e%2e%2f\|%2e%2e/)` |
+| **Context** | `url` |
+
+Click **Save** to commit the sensor.
+
+> 💡 **Tip:** NeuVector also ships with built-in WAF signatures you can import. The manual rules here are to make the pattern-matching logic visible and auditable.
+
+### Step 12 — Apply the WAF Sensor to the Group
+
+Navigate to **Policy** → **Groups** → `nv.chell-test.aperture-sci`.
+
+Click **WAF** (tab or section within the group detail). Click **Add** and select `aperture-waf`. Set the action to **Alert** first so you can observe before blocking.
+
+Click **Deploy**.
+
+> 🎯 **Key talking point:** WAF sensors are applied per-group, just like policy modes. You can have different WAF postures for different workloads — a front-end service might get full OWASP coverage while an internal metrics scraper gets none. Granularity again.
+
+### Step 13 — Trigger a SQL Injection Alert
+
+Exec into the `chell-test` container:
+
+```bash
+kubectl exec -it $(kubectl get pods -n aperture-sci -o custom-columns=":metadata.name" --no-headers) -n aperture-sci -- /bin/sh
+```
+
+From inside the container, send a request with a SQL injection payload in the URL:
+
+```bash
+curl -sk "https://www.fastly.com/path?id=1%27%20OR%20%271%27%3D%271"
+```
+
+The request may succeed (because the sensor is in **Alert** mode), but navigate to **Notifications** → **Security Events** and you should see a WAF event:
+
+- **Type:** WAF
+- **Sensor:** `aperture-waf`
+- **Rule:** `sql-injection`
+- **Source:** `chell-test`
+- **Action:** Alert
+
+> 🎯 **Key talking point:** The network rule allowed this connection — `fastly.com` on port 443 is in the learned baseline. But the WAF caught what the network rule couldn't: a malicious payload inside the allowed channel. This is the difference between network security and application security.
+
+### Step 14 — Switch WAF to Deny and Verify Blocking
+
+Go back to **Policy** → **Groups** → `nv.chell-test.aperture-sci` → **WAF**. Change the action for `aperture-waf` from **Alert** to **Deny**. Click **Deploy**.
+
+From inside the container, repeat the request:
+
+```bash
+curl -sk "https://www.fastly.com/path?id=1%27%20OR%20%271%27%3D%271"
+```
+
+**Expected result:** The connection is **blocked**. You'll see a failure or no response.
+
+Also test the path traversal rule:
+
+```bash
+curl -sk "https://www.fastly.com/../../etc/passwd"
+```
+
+Both should be blocked. Return to **Notifications** → **Security Events** — you'll now see **Deny** WAF events for each attempt.
+
+> 🎯 **Key talking point:** The container is allowed to talk to Fastly — that hasn't changed. But now the *content* of those allowed requests is also policed. An attacker who compromises this container and tries to use it as a pivot for a web-based attack gets stopped by NeuVector, not by a perimeter firewall they might not even reach.
+
+### Step 15 — WAF Cleanup
+
+Remove the WAF sensor from the group before proceeding:
+
+1. **Policy** → **Groups** → `nv.chell-test.aperture-sci` → **WAF** — remove `aperture-waf`, click **Deploy**
+2. **Policy** → **WAF Sensors** — delete `aperture-waf`
+
+---
+
+## Part 6: Closing the Loop
+
+### Step 16 — Review the Violation Timeline
+
+In **Notifications** → **Security Events**, review the violation events side by side. Point out:
+
+- **What was attempted** (process, destination, protocol, payload)
 - **What action NeuVector took** (blocked)
-- **How this maps to a real threat scenario** — unauthorized outbound connections, potential C2 callout, data exfiltration attempt
+- **How this maps to a real threat scenario** — unauthorized outbound connections, potential C2 callout, data exfiltration attempt, web-based attack pivoting
 
-### Step 12 — Optional: Show the Network Graph Differential
+### Step 17 — Optional: Show the Network Graph Differential
 
 Return to **Network Activity**. The attempted (blocked) connections may appear as **red dotted lines** in the network graph — visually distinct from the green allowed connection to Fastly. This gives a clear "what was allowed vs. what was blocked" picture for a non-technical audience.
 
@@ -288,6 +388,9 @@ Return to **Network Activity**. The attempted (blocked) connections may appear a
 | `curl fastly.com` (automated loop) | Protect | ✅ Allowed — matches learned baseline |
 | `curl google.com` (interactive) | Protect | 🚫 Blocked — no learned rule exists |
 | `wget fastly.com` (interactive) | Protect | 🚫 Blocked — process signature mismatch |
+| `curl fastly.com?id=SQL_INJECT` | WAF Alert | ⚠️ Allowed but alerted — WAF pattern match |
+| `curl fastly.com?id=SQL_INJECT` | WAF Deny | 🚫 Blocked — WAF enforcement on HTTP payload |
+| `curl fastly.com/../../etc/passwd` | WAF Deny | 🚫 Blocked — WAF path traversal rule |
 
 ---
 
@@ -300,3 +403,5 @@ Return to **Network Activity**. The attempted (blocked) connections may appear a
 **Graduated rollout.** Discover → Monitor → Protect gives operators the ability to build confidence before enforcing. You don't have to choose between blind blocking and total permissiveness.
 
 **Full audit trail.** Every allowed and blocked connection is logged with enough context to reconstruct what happened, when, and from where — directly satisfying audit and compliance requirements for IL4/IL5 environments.
+
+**Layer 7 WAF built in.** NeuVector's WAF engine inspects HTTP payload content — URL parameters, headers, and body — for attack patterns like SQL injection, XSS, and path traversal. This is application-layer protection without a separate appliance, operating inside the cluster on a per-workload basis.
