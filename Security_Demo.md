@@ -206,26 +206,35 @@ You should still see the familiar output every ~5 seconds:
 
 > 🎯 **Key talking point:** This is the *currently allowed* baseline. We're about to change that — in real time, with zero restarts or redeployments.
 
-### Step 10b — Create a Network Rule to Block *.fastly.com
+### Step 10b — Create an Address Group for *.fastly.com
 
-In the NeuVector console, navigate to **Policy** → **Network Rules**.
+Before creating the deny rule, you need a named group that represents the Fastly domain. Navigate to **Policy** → **Groups** and click **Add**.
 
-Click **Add** to create a new rule and fill in:
+| Field | Value |
+|-------|-------|
+| **Name** | `fastly-external` |
+| **Type** | `address` |
+| **Criteria** | `Domain` = `*.fastly.com` |
+
+Click **Add** to save the group. This gives NeuVector a target it can match by FQDN — without it, any rule targeting `external` would apply to *all* outbound traffic, not just Fastly.
+
+### Step 10c — Create the Deny Rule
+
+Navigate to **Policy** → **Network Rules** and click **Add**:
 
 | Field | Value |
 |-------|-------|
 | **From** | `nv.chell-test.aperture-sci` |
-| **To** | `external` |
-| **Applications** | `SSL` / `HTTPS` |
+| **To** | `fastly-external` |
 | **Ports** | `443` |
 | **Action** | **Deny** |
 | **Comment** | `Block *.fastly.com` |
 
-> ⚠️ **Order matters.** Drag the new **Deny** rule *above* the existing allow rule for external SSL traffic. NeuVector evaluates rules top-down — the first match wins. If the allow rule fires first, the deny never gets evaluated.
+> ⚠️ **Order matters.** Drag the new **Deny** rule *above* the existing allow rule for `chell-test` external SSL traffic. NeuVector evaluates rules top-down — the first match wins.
 
 Click **Deploy** to push the ruleset.
 
-### Step 10c — Observe the Block Taking Effect
+### Step 10d — Observe the Block Taking Effect
 
 Watch the container logs. Within one cycle (≤5 seconds), the output will stop — or you'll see a connection failure instead of the `subjectAltName` line:
 
@@ -244,9 +253,12 @@ In **Notifications** → **Security Events** you should see a stream of **Deny**
 
 > 🎯 **Key talking point:** We just changed enforcement policy on a live, running workload with no restart, no redeployment, and no changes to the container image or Kubernetes manifests. The policy lives in NeuVector — independent of the workload. This is the operational model for runtime security: the application doesn't need to know anything about the enforcement layer.
 
-### Step 10d — Remove the Block Rule (Cleanup)
+### Step 10e — Remove the Block Rule (Cleanup)
 
-To restore baseline traffic for the rest of the demo, return to **Policy** → **Network Rules**, find the Deny rule you just created, and delete it. Click **Deploy**.
+To restore baseline traffic for the rest of the demo:
+
+1. **Policy** → **Network Rules** — delete the `Block *.fastly.com` deny rule, click **Deploy**
+2. **Policy** → **Groups** — delete the `fastly-external` address group
 
 The `curl` log output will resume within one cycle.
 
