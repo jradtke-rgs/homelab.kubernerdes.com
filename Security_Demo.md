@@ -213,8 +213,7 @@ Before creating the deny rule, you need a named group that represents the Fastly
 | Field | Value |
 |-------|-------|
 | **Name** | `fastly-external` |
-| **Type** | `address` |
-| **Criteria** | `Domain` = `*.fastly.com` |
+| **Criteria** | `address=*.fastly.com` |
 
 Click **Add** to save the group. This gives NeuVector a target it can match by FQDN — without it, any rule targeting `external` would apply to *all* outbound traffic, not just Fastly.
 
