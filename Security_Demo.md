@@ -182,7 +182,7 @@ wget https://www.fastly.com 2>&1 | grep subjectAltName
 
 You should see a second violation event in the NeuVector console for this attempt as well.
 
-Lets Rewrite Rule for wget and try again.  It still fails (refresh NeuVector and you'll see why: grep was not allow-listed.  Go ahead and rewrite for grep.  
+Lets Rewrite Rule for wget and try again.  It still fails (refresh NeuVector and you'll see why: grep was not allow-listed).  Go ahead and rewrite for grep.  
 
 > You should start to recognize how granular the controls can be - which is effective in mitigating the "unknown" vulnerabilities that might be attempted.
 ---
