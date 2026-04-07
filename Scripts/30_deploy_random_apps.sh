@@ -20,7 +20,7 @@ trap 'rm -rf "$HEXGL_TMP"' EXIT
 echo "Cloning HexGL repo..."
 git clone --depth=1 https://github.com/jradtke-rgs/HexGL "$HEXGL_TMP"
 
-bash "$HEXGL_TMP/scripts/deploy.sh" -k "$KUBECONFIG" -o example
+bash "$HEXGL_TMP/scripts/deploy.sh" -k "$KUBECONFIG" -o homelab
 
 ##############################################################################
 # chell-test — SUSE Security test workload (curl + wget, periodic fastly probe)
