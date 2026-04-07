@@ -20,6 +20,10 @@ NEUVECTOR_CHART_VERSION="2.8.11"   # chart version for NeuVector 5.4.9
 RANCHER_URL="https://rancher.homelab.kubernerdes.com"
 
 export KUBECONFIG=~/.kube/homelab-apps.kubeconfig
+if ! kubectl get nodes &>/dev/null; then
+  echo "ERROR: cannot reach cluster via $KUBECONFIG — exiting" >&2
+  exit 1
+fi
 kubectl get nodes
 
 # ---------------------------------------------------------------------------

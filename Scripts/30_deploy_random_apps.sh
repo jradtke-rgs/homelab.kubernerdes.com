@@ -8,6 +8,9 @@ set -euo pipefail
 KUBECONFIG="${KUBECONFIG:-~/.kube/homelab-apps.kubeconfig}"
 export KUBECONFIG
 
+ENVIRONMENT="apps.homelab"
+DOMAIN="kubernerdes.com"
+
 ##############################################################################
 # HexGL — futuristic WebGL racing game
 ##############################################################################
@@ -19,6 +22,31 @@ trap 'rm -rf "$HEXGL_TMP"' EXIT
 
 echo "Cloning HexGL repo..."
 git clone --depth=1 https://github.com/jradtke-rgs/HexGL "$HEXGL_TMP"
+
+mkdir -p "$HEXGL_TMP/k8s/overlays/homelab"
+cat > "$HEXGL_TMP/k8s/overlays/homelab/kustomization.yaml" << EOF
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: hexgl
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Ingress
+      name: hexgl
+    patch: |
+      - op: replace
+        path: /spec/rules/0/host
+        value: hexgl.${ENVIRONMENT}.${DOMAIN}
+
+images:
+  - name: hexgl
+    newName: docker.io/cloudxabide/hexgl
+    newTag: latest
+EOF
 
 bash "$HEXGL_TMP/scripts/deploy.sh" -k "$KUBECONFIG" -o homelab
 

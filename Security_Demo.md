@@ -185,11 +185,76 @@ You should see a second violation event in the NeuVector console for this attemp
 Lets Rewrite Rule for wget and try again.  It still fails (refresh NeuVector and you'll see why: grep was not allow-listed).  Go ahead and rewrite for grep.  
 
 > You should start to recognize how granular the controls can be - which is effective in mitigating the "unknown" vulnerabilities that might be attempted.
+
 ---
 
-## Part 4: Closing the Loop
+## Part 4: Blocking a Specific Domain
 
-### Step 10 — Review the Violation Timeline
+### Step 10a — Confirm Baseline Traffic is Still Flowing
+
+Before implementing the block, confirm that the automated `curl` loop is still successfully reaching `www.fastly.com`. From a separate terminal (outside the container):
+
+```bash
+kubectl logs -f $(kubectl get pods -n aperture-sci -o custom-columns=":metadata.name" --no-headers) -n aperture-sci
+```
+
+You should still see the familiar output every ~5 seconds:
+
+```
+*  subjectAltName: host "www.fastly.com" matched cert's "*.fastly.com"
+```
+
+> 🎯 **Key talking point:** This is the *currently allowed* baseline. We're about to change that — in real time, with zero restarts or redeployments.
+
+### Step 10b — Create a Network Rule to Block *.fastly.com
+
+In the NeuVector console, navigate to **Policy** → **Network Rules**.
+
+Click **Add** to create a new rule and fill in:
+
+| Field | Value |
+|-------|-------|
+| **From** | `nv.chell-test.aperture-sci` |
+| **To** | `external` |
+| **Applications** | `SSL` / `HTTPS` |
+| **Ports** | `443` |
+| **Action** | **Deny** |
+| **Comment** | `Block *.fastly.com` |
+
+> ⚠️ **Order matters.** Drag the new **Deny** rule *above* the existing allow rule for external SSL traffic. NeuVector evaluates rules top-down — the first match wins. If the allow rule fires first, the deny never gets evaluated.
+
+Click **Deploy** to push the ruleset.
+
+### Step 10c — Observe the Block Taking Effect
+
+Watch the container logs. Within one cycle (≤5 seconds), the output will stop — or you'll see a connection failure instead of the `subjectAltName` line:
+
+```bash
+kubectl logs -f $(kubectl get pods -n aperture-sci -o custom-columns=":metadata.name" --no-headers) -n aperture-sci
+```
+
+The loop is still running inside the container — `curl` is still attempting the connection every 5 seconds — but NeuVector is now dropping it before it reaches the network.
+
+In **Notifications** → **Security Events** you should see a stream of **Deny** events:
+
+- **Source:** `chell-test`
+- **Destination:** `www.fastly.com`
+- **Port:** `443`
+- **Action:** **Denied**
+
+> 🎯 **Key talking point:** We just changed enforcement policy on a live, running workload with no restart, no redeployment, and no changes to the container image or Kubernetes manifests. The policy lives in NeuVector — independent of the workload. This is the operational model for runtime security: the application doesn't need to know anything about the enforcement layer.
+
+### Step 10d — Remove the Block Rule (Cleanup)
+
+To restore baseline traffic for the rest of the demo, return to **Policy** → **Network Rules**, find the Deny rule you just created, and delete it. Click **Deploy**.
+
+The `curl` log output will resume within one cycle.
+
+---
+
+## Part 5: Closing the Loop
+
+### Step 11 — Review the Violation Timeline
 
 In **Notifications** → **Security Events**, review the two violation events side by side. Point out:
 
@@ -197,7 +262,7 @@ In **Notifications** → **Security Events**, review the two violation events si
 - **What action NeuVector took** (blocked)
 - **How this maps to a real threat scenario** — unauthorized outbound connections, potential C2 callout, data exfiltration attempt
 
-### Step 11 — Optional: Show the Network Graph Differential
+### Step 12 — Optional: Show the Network Graph Differential
 
 Return to **Network Activity**. The attempted (blocked) connections may appear as **red dotted lines** in the network graph — visually distinct from the green allowed connection to Fastly. This gives a clear "what was allowed vs. what was blocked" picture for a non-technical audience.
 
