@@ -16,7 +16,7 @@ This walkthrough guides you through a live demonstration of SUSE Security (NeuVe
 
 Before you begin, confirm the test container is running and active. The `chell-test` container in the `aperture-sci` namespace is continuously making outbound HTTPS requests every 5 seconds:
 
-See [Scripts/80_deploy_random_apps.sh](Scripts/80_deploy_random_apps.sh) for deploying the simple container for this demo.
+See [Scripts/30_deploy_random_apps.sh](Scripts/30_deploy_random_apps.sh) for deploying the simple container for this demo.
 
 ```bash
 kubectl get pods -n aperture-sci
@@ -182,6 +182,9 @@ wget https://www.fastly.com 2>&1 | grep subjectAltName
 
 You should see a second violation event in the NeuVector console for this attempt as well.
 
+Lets Rewrite Rule for wget and try again.  It still fails (refresh NeuVector and you'll see why: grep was not allow-listed.  Go ahead and rewrite for grep.  
+
+> You should start to recognize how granular the controls can be - which is effective in mitigating the "unknown" vulnerabilities that might be attempted.
 ---
 
 ## Part 4: Closing the Loop
