@@ -219,7 +219,7 @@ Click **Add** to save the group. This gives NeuVector a target it can match by F
 
 ### Step 10c — Create the Deny Rule
 
-Navigate to **Policy** → **Network Rules** and click **Add**:
+Navigate to **Policy** → **Network Rules** and click **Add To Top**:
 
 | Field | Value |
 |-------|-------|
@@ -229,7 +229,7 @@ Navigate to **Policy** → **Network Rules** and click **Add**:
 | **Action** | **Deny** |
 | **Comment** | `Block *.fastly.com` |
 
-> ⚠️ **Order matters.** Drag the new **Deny** rule *above* the existing allow rule for `chell-test` external SSL traffic. NeuVector evaluates rules top-down — the first match wins.
+> ⚠️ **Order matters.** Using **Add To Top** ensures the Deny rule evaluates before any existing allow rules. NeuVector evaluates rules top-down — the first match wins.
 
 Click **Deploy** to push the ruleset.
 
