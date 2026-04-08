@@ -6,7 +6,10 @@
 # SSH:   ssh -i ~/.ssh/id_rsa-homelab sles@<IP>
 
 # Configure correct K8s cluster
-export KUBECONFIG=~/.kube/homelab-applications.kubeconfig
+ENVIRONMENT="${ENVIRONMENT:-homelab}"
+DOMAIN="${DOMAIN:-kubernerdes.com}"
+BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
+export KUBECONFIG="${KUBECONFIG:-~/.kube/${ENVIRONMENT}-applications.kubeconfig}"
 
 #######################################
 # CVE Comparison: Old vs New image tags
@@ -92,7 +95,7 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   rules:
-  - host: online-boutique.applications.homelab.kubernerdes.com
+  - host: online-boutique.applications.${BASE_DOMAIN}
     http:
       paths:
       - path: /

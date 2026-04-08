@@ -5,16 +5,20 @@
 # Run as: mansible - after a fresh OpenSUSE Leap 15.6 install.
 #
 # Services installed:
-#   BIND   — authoritative DNS for homelab.kubernerdes.com
+#   BIND   — authoritative DNS for ${BASE_DOMAIN}
 #   DHCP   — ISC dhcpd with iPXE boot support for Harvester nodes
 #   TFTP   — serves ipxe.efi for initial UEFI PXE handoff
 #   kubectl — for cluster management from the infra node
 #
 # Config files are pulled from the admin node web root during install,
 # then managed in-place (or via this repo) going forward.
+ENVIRONMENT="${ENVIRONMENT:-homelab}"
+DOMAIN="${DOMAIN:-kubernerdes.com}"
+BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
+
 REPO_SERVER=http://10.0.0.10/
-REPO_NAME=homelab.kubernerdes.com
-REPO_BASE=${REPO_SERVER}${REPO_NAME}
+REPO_NAME="${BASE_DOMAIN}"
+REPO_BASE="${REPO_SERVER}${REPO_NAME}"
 echo "# NOTE: using $REPO_BASE to pull bits"
 curl ${REPO_BASE}/README.md
 
@@ -57,7 +61,7 @@ case $(uname -n) in
   nuc-00-01)
     echo "blah"
     for ZONE_FILE in \
-      db.homelab.kubernerdes.com \
+      db.${BASE_DOMAIN} \
       db-0.0.10.in-addr.arpa \
       db-1.0.10.in-addr.arpa \
       db-2.0.10.in-addr.arpa \
@@ -110,7 +114,7 @@ for SVC  in $SERVICES;  do sudo firewall-cmd --permanent --zone=public --add-ser
 sudo firewall-cmd --reload
 sudo firewall-cmd --list-all
 
-host -l homelab.kubernerdes.com
+host -l "${BASE_DOMAIN}"
 
 # ---------------------------------------------------------------------------
 # kubectl

@@ -2,9 +2,13 @@
 
 sudo su -
 
+ENVIRONMENT="${ENVIRONMENT:-homelab}"
+DOMAIN="${DOMAIN:-kubernerdes.com}"
+BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
+
 REPO_SERVER=http://10.0.0.10/
-REPO_NAME=homelab.kubernerdes.com
-REPO_BASE=${REPO_SERVER}${REPO_NAME}
+REPO_NAME="${BASE_DOMAIN}"
+REPO_BASE="${REPO_SERVER}${REPO_NAME}"
 echo "# NOTE: using $REPO_BASE to pull bits"
 curl ${REPO_BASE}/README.md | tail -2
 

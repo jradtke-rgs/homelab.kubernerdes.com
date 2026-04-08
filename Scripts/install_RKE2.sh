@@ -22,35 +22,39 @@ if [[ "$(id -u)" -ne 0 ]]; then
   exit 1
 fi
 
+ENVIRONMENT="${ENVIRONMENT:-homelab}"
+DOMAIN="${DOMAIN:-kubernerdes.com}"
+BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
+
 # ---------------------------------------------------------------------------
 # Set cluster-specific variables
 # ---------------------------------------------------------------------------
 case $(uname -n) in
   rancher-0*)
-    cat << 'EOF' | tee /root/.rke2.vars
+    cat << EOF | tee /root/.rke2.vars
 export MY_CLUSTER=rancher
 export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-RancherRKE2
 export MY_RKE2_VIP=10.0.0.210
-export MY_RKE2_HOSTNAME=rancher.homelab.kubernerdes.com
+export MY_RKE2_HOSTNAME=rancher.${BASE_DOMAIN}
 EOF
   ;;
   observability-0*)
-    cat << 'EOF' | tee /root/.rke2.vars
+    cat << EOF | tee /root/.rke2.vars
 export MY_CLUSTER=observability
 export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-ObsRKE2
 export MY_RKE2_VIP=10.0.0.220
-export MY_RKE2_HOSTNAME=observability.homelab.kubernerdes.com
+export MY_RKE2_HOSTNAME=observability.${BASE_DOMAIN}
 EOF
   ;;
   apps-0*)
-    cat << 'EOF' | tee /root/.rke2.vars
+    cat << EOF | tee /root/.rke2.vars
 export MY_CLUSTER=apps
 export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-AppsRKE2
 export MY_RKE2_VIP=10.0.0.230
-export MY_RKE2_HOSTNAME=apps.homelab.kubernerdes.com
+export MY_RKE2_HOSTNAME=apps.${BASE_DOMAIN}
 EOF
   ;;
   *)
@@ -68,23 +72,23 @@ sed -i -e "/${MY_CLUSTER}/d" /etc/hosts
 case ${MY_CLUSTER} in
   rancher)
     cat << EOF >> /etc/hosts
-10.0.0.211    rancher-01.homelab.kubernerdes.com rancher-01
-10.0.0.212    rancher-02.homelab.kubernerdes.com rancher-02
-10.0.0.213    rancher-03.homelab.kubernerdes.com rancher-03
+10.0.0.211    rancher-01.${BASE_DOMAIN} rancher-01
+10.0.0.212    rancher-02.${BASE_DOMAIN} rancher-02
+10.0.0.213    rancher-03.${BASE_DOMAIN} rancher-03
 EOF
   ;;
   observability)
     cat << EOF >> /etc/hosts
-10.0.0.221    observability-01.homelab.kubernerdes.com observability-01
-10.0.0.222    observability-02.homelab.kubernerdes.com observability-02
-10.0.0.223    observability-03.homelab.kubernerdes.com observability-03
+10.0.0.221    observability-01.${BASE_DOMAIN} observability-01
+10.0.0.222    observability-02.${BASE_DOMAIN} observability-02
+10.0.0.223    observability-03.${BASE_DOMAIN} observability-03
 EOF
   ;;
   apps)
     cat << EOF >> /etc/hosts
-10.0.0.231    apps-01.homelab.kubernerdes.com apps-01
-10.0.0.232    apps-02.homelab.kubernerdes.com apps-02
-10.0.0.233    apps-03.homelab.kubernerdes.com apps-03
+10.0.0.231    apps-01.${BASE_DOMAIN} apps-01
+10.0.0.232    apps-02.${BASE_DOMAIN} apps-02
+10.0.0.233    apps-03.${BASE_DOMAIN} apps-03
 EOF
   ;;
 esac

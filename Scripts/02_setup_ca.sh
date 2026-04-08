@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # What this does:
 #   1. Generates an RSA 4096 root CA (10-year validity)
-#   2. Stores it in /etc/ssl/homelab-ca/ (key is chmod 600)
+#   2. Stores it in /etc/ssl/${ENVIRONMENT}-ca/ (key is chmod 600)
 #   3. Adds the root CA to the nuc-00 system trust store
 #   4. Restarts Docker if running (so it picks up the new CA immediately)
 #
@@ -16,15 +16,19 @@ set -euo pipefail
 #   openssl genrsa -out <service>.key 4096
 #   openssl req -new -key <service>.key -out <service>.csr -subj "/CN=<hostname>/O=homelab/C=US"
 #   openssl x509 -req -days 730 -in <service>.csr \
-#     -CA /etc/ssl/homelab-ca/ca.crt -CAkey /etc/ssl/homelab-ca/ca.key -CAcreateserial \
+#     -CA /etc/ssl/${ENVIRONMENT}-ca/ca.crt -CAkey /etc/ssl/${ENVIRONMENT}-ca/ca.key -CAcreateserial \
 #     -out <service>.crt -extfile <(printf "subjectAltName=DNS:<hostname>,IP:<ip>")
 #
 # Distribute the root CA cert to all homelab nodes:
-#   scp root@10.0.0.10:/etc/ssl/homelab-ca/ca.crt /etc/pki/trust/anchors/homelab-root-ca.crt
+#   scp root@10.0.0.10:/etc/ssl/${ENVIRONMENT}-ca/ca.crt /etc/pki/trust/anchors/${ENVIRONMENT}-root-ca.crt
 #   update-ca-certificates
 
-CA_DIR="/etc/ssl/homelab-ca"
-CA_CN="${CA_CN:-homelab.kubernerdes.com Root CA}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
+
+CA_DIR="/etc/ssl/${ENVIRONMENT}-ca"
+CA_CN="${CA_CN:-${BASE_DOMAIN} Root CA}"
 CA_VALIDITY_DAYS="${CA_VALIDITY_DAYS:-3650}"  # 10 years
 
 # ---------------------------------------------------------------------------
@@ -73,7 +77,7 @@ echo "    Expires:        $(openssl x509 -in "${CA_DIR}/ca.crt" -noout -enddate)
 # Step 2 — Trust the CA on nuc-00
 # ---------------------------------------------------------------------------
 echo "==> Adding root CA to nuc-00 system trust store"
-cp "${CA_DIR}/ca.crt" /etc/pki/trust/anchors/homelab-root-ca.crt
+cp "${CA_DIR}/ca.crt" /etc/pki/trust/anchors/${ENVIRONMENT}-root-ca.crt
 update-ca-certificates
 
 # ---------------------------------------------------------------------------
@@ -91,7 +95,7 @@ echo
 echo "==> Root CA setup complete."
 echo
 echo "    Distribute to all homelab nodes before installing services:"
-echo "      scp root@10.0.0.10:${CA_DIR}/ca.crt /etc/pki/trust/anchors/homelab-root-ca.crt"
+echo "      scp root@10.0.0.10:${CA_DIR}/ca.crt /etc/pki/trust/anchors/${ENVIRONMENT}-root-ca.crt"
 echo "      update-ca-certificates"
 echo
 echo "    cert-manager integration (once RKE2/Rancher is running):"

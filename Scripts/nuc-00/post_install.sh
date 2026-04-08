@@ -17,10 +17,14 @@
 #   8. Install tools (git, kubectl, k9s)
 #
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../env.sh
+source "${SCRIPT_DIR}/../env.sh"
+
 # ---------------------------------------------------------------------------
 # 1. SSH key + sudo
 # ---------------------------------------------------------------------------
-echo | ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa-homelab
+echo | ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa-${ENVIRONMENT}
 
 MYUSER=$(whoami)
 echo "$MYUSER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/${MYUSER}-sudo
@@ -154,7 +158,7 @@ for VM_HOSTNAME in nuc-00-01 nuc-00-02 nuc-00-03; do
     --network network=virbr0 \
     --graphics none \
     --location "http://${ADMIN_NODE_IP}/OS/openSUSE-Leap-15.6-DVD-x86_64-Media" \
-    --extra-args "console=ttyS0 textmode=1 hostname=${VM_HOSTNAME}.homelab.kubernerdes.com" \
+    --extra-args "console=ttyS0 textmode=1 hostname=${VM_HOSTNAME}.${BASE_DOMAIN}" \
     --noautoconsole
   sleep 10
 done
@@ -165,9 +169,9 @@ done
 sudo zypper --non-interactive install git vim curl wget iotop
 
 # Clone this repo to the web root so it is accessible to all homelab nodes
-sudo mkdir -p /srv/www/htdocs/homelab.kubernerdes.com
-sudo git clone https://github.com/jradtke-rgs/homelab.kubernerdes.com.git \
-  /srv/www/htdocs/homelab.kubernerdes.com
+sudo mkdir -p /srv/www/htdocs/${BASE_DOMAIN}
+sudo git clone https://github.com/jradtke-rgs/${BASE_DOMAIN}.git \
+  /srv/www/htdocs/${BASE_DOMAIN}
 
 # kubectl
 sudo tee /etc/zypp/repos.d/kubernetes.repo << 'EOF'

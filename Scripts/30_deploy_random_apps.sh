@@ -5,11 +5,14 @@
 
 set -euo pipefail
 
-KUBECONFIG="${KUBECONFIG:-~/.kube/homelab-apps.kubeconfig}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
+
+KUBECONFIG="${KUBECONFIG:-${KUBECONFIG_APPS}}"
 export KUBECONFIG
 
-ENVIRONMENT="apps.homelab"
-DOMAIN="kubernerdes.com"
+APPS_ENV="apps.${ENVIRONMENT}"
 
 ##############################################################################
 # HexGL — futuristic WebGL racing game
@@ -40,7 +43,7 @@ patches:
     patch: |
       - op: replace
         path: /spec/rules/0/host
-        value: hexgl.${ENVIRONMENT}.${DOMAIN}
+        value: hexgl.${APPS_ENV}.${DOMAIN}
 
 images:
   - name: hexgl

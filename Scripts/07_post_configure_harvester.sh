@@ -2,11 +2,15 @@
 set -euo pipefail
 
 # prereqs:  You need a kubeconfig to connect to the Harvester API
-#           Run from nuc-00 (has homelab CA at /etc/ssl/homelab-ca/ca.crt)
+#           Run from nuc-00 (has ${ENVIRONMENT} CA at /etc/ssl/${ENVIRONMENT}-ca/ca.crt)
 # Usage:    KUBECONFIG=/path/to/harvester-kubeconfig.yaml ./07_post_configure_harvester.sh
 
-IMAGES_BASE_URL="http://10.0.0.10/images"
-TEMPLATES_BASE_URL="http://10.0.0.10/homelab.kubernerdes.com/Files/CloudConfigurationTemplates"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
+
+IMAGES_BASE_URL="http://${ADMIN_IP}/images"
+TEMPLATES_BASE_URL="${REPO_BASE}/Files/CloudConfigurationTemplates"
 
 # Sanitize a string into a valid Kubernetes resource name
 k8s_name() {

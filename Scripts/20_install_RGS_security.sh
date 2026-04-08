@@ -6,7 +6,7 @@
 #
 # Prerequisites:
 #   - apps cluster deployed via Rancher Manager (3-node RKE2 on SL-Micro)
-#   - KUBECONFIG saved as ~/.kube/homelab-apps.kubeconfig
+#   - KUBECONFIG saved as ~/.kube/${ENVIRONMENT}-apps.kubeconfig
 #   - Internet access from cluster nodes (community install pulls from public registry)
 #
 # Chart version 2.8.11 = NeuVector appVersion 5.4.9
@@ -15,11 +15,15 @@
 #   https://open-docs.neuvector.com/deploying/kubernetes
 #   https://ranchermanager.docs.rancher.com/integrations-in-rancher/neuvector
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
+
 NEUVECTOR_VERSION="5.4.9"
 NEUVECTOR_CHART_VERSION="2.8.11"   # chart version for NeuVector 5.4.9
-RANCHER_URL="https://rancher.homelab.kubernerdes.com"
+RANCHER_URL="https://${RANCHER_HOSTNAME}"
 
-export KUBECONFIG=~/.kube/homelab-apps.kubeconfig
+export KUBECONFIG="${KUBECONFIG_APPS}"
 if ! kubectl get nodes &>/dev/null; then
   echo "ERROR: cannot reach cluster via $KUBECONFIG — exiting" >&2
   exit 1
@@ -65,7 +69,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: neuvector.applications.homelab.kubernerdes.com
+    - host: neuvector.applications.${BASE_DOMAIN}
       http:
         paths:
           - path: /
@@ -77,7 +81,7 @@ spec:
                   number: 8443
   tls:
     - hosts:
-        - neuvector.applications.homelab.kubernerdes.com
+        - neuvector.applications.${BASE_DOMAIN}
 EOF
 kubectl apply -f /tmp/neuvector-ingress.yaml
 kubectl get ingress -n cattle-neuvector-system
@@ -85,7 +89,7 @@ kubectl get ingress -n cattle-neuvector-system
 # ---------------------------------------------------------------------------
 # Retrieve bootstrap password
 # ---------------------------------------------------------------------------
-echo "NeuVector UI: https://neuvector.applications.homelab.kubernerdes.com"
+echo "NeuVector UI: https://neuvector.applications.${BASE_DOMAIN}"
 echo "Bootstrap password: $(kubectl get secret \
   --namespace cattle-neuvector-system neuvector-bootstrap-secret \
   -o go-template='{{ .data.bootstrapPassword|base64decode}}{{ "\n" }}' 2>/dev/null \

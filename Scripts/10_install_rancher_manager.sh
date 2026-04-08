@@ -12,11 +12,14 @@ set -euo pipefail
 # Reference:
 #   https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
+
 CERTMGR_VERSION="v1.19.2"
 RANCHER_VERSION="2.13.3"
-RANCHER_HOSTNAME="rancher.homelab.kubernerdes.com"
-RKE2_VIP="10.0.0.210"
-KUBECONFIG_PATH="${HOME}/.kube/homelab-rancher.kubeconfig"
+RKE2_VIP="${RANCHER_VIP}"
+KUBECONFIG_PATH="${KUBECONFIG_RANCHER}"
 SSH_KEY="${HOME}/.ssh/id_rsa-kubernerdes"
 SSH_OPTS="-i ${SSH_KEY} -o StrictHostKeyChecking=no -o ConnectTimeout=10"
 

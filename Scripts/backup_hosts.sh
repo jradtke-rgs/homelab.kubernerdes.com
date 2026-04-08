@@ -8,8 +8,11 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_BASE="${SCRIPT_DIR}/../Files"
 
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
+
 # Domain appended to short hostnames for SSH connections
-DOMAIN="homelab.kubernerdes.com"
+DOMAIN="${BASE_DOMAIN}"
 DEFAULT_SSH_USER="root"
 
 # --- Per-host file lists ---
@@ -27,7 +30,7 @@ NUC_00_01_FILES=(
   /etc/dhcpd.d/dhcpd-hosts.conf
   /etc/named.conf
   /srv/tftpboot/ipxe.efi
-  /var/lib/named/master/db.homelab.kubernerdes.com
+  /var/lib/named/master/db.${BASE_DOMAIN}
   /var/lib/named/master/db-0.0.10.in-addr.arpa
   /var/lib/named/master/db-1.0.10.in-addr.arpa
   /var/lib/named/master/db-2.0.10.in-addr.arpa

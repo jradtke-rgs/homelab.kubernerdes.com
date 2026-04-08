@@ -11,15 +11,19 @@
 # SU to root
 sudo su -
 
+ENVIRONMENT="${ENVIRONMENT:-homelab}"
+DOMAIN="${DOMAIN:-kubernerdes.com}"
+BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
+
 # Remove any existing host entry
 sudo sed -i -e '/rancher/d' /etc/hosts
 # Add all the Rancher Nodes to /etc/hosts
 cat << EOF | tee -a  /etc/hosts
 
 # Rancher Nodes
-10.0.0.211    rancher-01.homelab.kubernerdes.com rancher-01
-10.0.0.212    rancher-02.homelab.kubernerdes.com rancher-02
-10.0.0.213    rancher-03.homelab.kubernerdes.com rancher-03
+10.0.0.211    rancher-01.${BASE_DOMAIN} rancher-01
+10.0.0.212    rancher-02.${BASE_DOMAIN} rancher-02
+10.0.0.213    rancher-03.${BASE_DOMAIN} rancher-03
 EOF
 
 # Set some variables
@@ -29,7 +33,7 @@ export MY_K3S_VERSION=v1.34.4+k3s1
 export MY_K3S_INSTALL_CHANNEL=v1.34
 export MY_K3S_TOKEN=Waggoner
 export MY_K3S_ENDPOINT=10.0.0.210
-export MY_K3S_HOSTNAME=rancher.homelab.kubernerdes.com
+export MY_K3S_HOSTNAME=rancher.${BASE_DOMAIN}
 
 # Make sure the proxy allows port 6443
 # TODO write a test for this?
@@ -94,11 +98,11 @@ helm install cert-manager jetstack/cert-manager \
 
 helm install rancher rancher-latest/rancher \
   --namespace cattle-system \
-  --set hostname=rancher.homelab.kubernerdes.com \
+  --set hostname=rancher.${BASE_DOMAIN} \
   --set replicas=1 \
   --set bootstrapPassword=Passw0rd01
 
-echo https://rancher.homelab.kubernerdes.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
+echo https://rancher.${BASE_DOMAIN}/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
 BOOTSTRAP_PASSWORD=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}')
 
 exit 

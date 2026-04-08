@@ -7,17 +7,21 @@
 # Prerequisites:
 #   - 3 SL-Micro VMs deployed on Harvester (observability-01/02/03)
 #   - RKE2 installed on all 3 VMs (Scripts/install_RKE2.sh — observability case)
-#   - KUBECONFIG saved as ~/.kube/homelab-observability.kubeconfig
+#   - KUBECONFIG saved as ~/.kube/${ENVIRONMENT}-observability.kubeconfig
 #   - O11Y_LICENSE env var set (SUSE Observability license key)
 #   - Internet access from cluster nodes (pulls from public helm repo)
 #
 # Reference:
 #   https://docs.stackstate.com/
 
-RANCHER_URL="https://rancher.homelab.kubernerdes.com"
-O11Y_URL="https://observability.homelab.kubernerdes.com"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
 
-export KUBECONFIG=~/.kube/homelab-observability.kubeconfig
+RANCHER_URL="https://${RANCHER_HOSTNAME}"
+O11Y_URL="https://${OBS_HOSTNAME}"
+
+export KUBECONFIG="${KUBECONFIG_OBS}"
 kubectl get nodes
 
 # ---------------------------------------------------------------------------
@@ -80,7 +84,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: observability.homelab.kubernerdes.com
+  - host: ${OBS_HOSTNAME}
     http:
       paths:
       - path: /
@@ -92,7 +96,7 @@ spec:
               number: 8080
   tls:
   - hosts:
-    - observability.homelab.kubernerdes.com
+    - ${OBS_HOSTNAME}
 EOF
 kubectl apply -f "${WORK_DIR}/suse-observability-ingress.yaml"
 

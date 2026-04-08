@@ -2,6 +2,10 @@
 
 # Prereqs:  haproxy is installed/working/configured
 
+ENVIRONMENT="${ENVIRONMENT:-homelab}"
+DOMAIN="${DOMAIN:-kubernerdes.com}"
+BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
+
 sudo su -
 
 # Install AWS client and other dependencies
@@ -31,13 +35,13 @@ sudo mkdir -p /etc/haproxy/certs
 # TODO:  ummm... where are the actual steps to request the cert.
 
 # Create combined PEM for spark-e
-sudo cat /etc/letsencrypt/live/spark-e.homelab.kubernerdes.com/fullchain.pem \
-        /etc/letsencrypt/live/spark-e.homelab.kubernerdes.com/privkey.pem \
-        > /etc/haproxy/certs/spark-e.homelab.kubernerdes.com.pem
+sudo cat /etc/letsencrypt/live/spark-e.${BASE_DOMAIN}/fullchain.pem \
+        /etc/letsencrypt/live/spark-e.${BASE_DOMAIN}/privkey.pem \
+        > /etc/haproxy/certs/spark-e.${BASE_DOMAIN}.pem
 
-sudo cat /etc/letsencrypt/live/spark-e-api.homelab.kubernerdes.com/fullchain.pem \
-        /etc/letsencrypt/live/spark-e-api.homelab.kubernerdes.com/privkey.pem \
-        > /etc/haproxy/certs/spark-e-api.homelab.kubernerdes.com.pem
+sudo cat /etc/letsencrypt/live/spark-e-api.${BASE_DOMAIN}/fullchain.pem \
+        /etc/letsencrypt/live/spark-e-api.${BASE_DOMAIN}/privkey.pem \
+        > /etc/haproxy/certs/spark-e-api.${BASE_DOMAIN}.pem
 
 # Set proper permissions
 sudo chmod 600 /etc/haproxy/certs/*.pem
