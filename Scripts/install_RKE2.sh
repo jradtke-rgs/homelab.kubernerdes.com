@@ -26,6 +26,12 @@ ENVIRONMENT="${ENVIRONMENT:-homelab}"
 DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
+case "${ENVIRONMENT}" in
+  homelab) IP_PREFIX="10.0.0" ;;
+  enclave) IP_PREFIX="10.10.12" ;;
+  *) echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'"; exit 1 ;;
+esac
+
 # ---------------------------------------------------------------------------
 # Set cluster-specific variables
 # ---------------------------------------------------------------------------
@@ -35,7 +41,7 @@ case $(uname -n) in
 export MY_CLUSTER=rancher
 export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-RancherRKE2
-export MY_RKE2_VIP=10.0.0.210
+export MY_RKE2_VIP=${IP_PREFIX}.210
 export MY_RKE2_HOSTNAME=rancher.${BASE_DOMAIN}
 EOF
   ;;
@@ -44,7 +50,7 @@ EOF
 export MY_CLUSTER=observability
 export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-ObsRKE2
-export MY_RKE2_VIP=10.0.0.220
+export MY_RKE2_VIP=${IP_PREFIX}.220
 export MY_RKE2_HOSTNAME=observability.${BASE_DOMAIN}
 EOF
   ;;
@@ -53,7 +59,7 @@ EOF
 export MY_CLUSTER=apps
 export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-AppsRKE2
-export MY_RKE2_VIP=10.0.0.230
+export MY_RKE2_VIP=${IP_PREFIX}.230
 export MY_RKE2_HOSTNAME=apps.${BASE_DOMAIN}
 EOF
   ;;
@@ -72,23 +78,23 @@ sed -i -e "/${MY_CLUSTER}/d" /etc/hosts
 case ${MY_CLUSTER} in
   rancher)
     cat << EOF >> /etc/hosts
-10.0.0.211    rancher-01.${BASE_DOMAIN} rancher-01
-10.0.0.212    rancher-02.${BASE_DOMAIN} rancher-02
-10.0.0.213    rancher-03.${BASE_DOMAIN} rancher-03
+${IP_PREFIX}.211    rancher-01.${BASE_DOMAIN} rancher-01
+${IP_PREFIX}.212    rancher-02.${BASE_DOMAIN} rancher-02
+${IP_PREFIX}.213    rancher-03.${BASE_DOMAIN} rancher-03
 EOF
   ;;
   observability)
     cat << EOF >> /etc/hosts
-10.0.0.221    observability-01.${BASE_DOMAIN} observability-01
-10.0.0.222    observability-02.${BASE_DOMAIN} observability-02
-10.0.0.223    observability-03.${BASE_DOMAIN} observability-03
+${IP_PREFIX}.221    observability-01.${BASE_DOMAIN} observability-01
+${IP_PREFIX}.222    observability-02.${BASE_DOMAIN} observability-02
+${IP_PREFIX}.223    observability-03.${BASE_DOMAIN} observability-03
 EOF
   ;;
   apps)
     cat << EOF >> /etc/hosts
-10.0.0.231    apps-01.${BASE_DOMAIN} apps-01
-10.0.0.232    apps-02.${BASE_DOMAIN} apps-02
-10.0.0.233    apps-03.${BASE_DOMAIN} apps-03
+${IP_PREFIX}.231    apps-01.${BASE_DOMAIN} apps-01
+${IP_PREFIX}.232    apps-02.${BASE_DOMAIN} apps-02
+${IP_PREFIX}.233    apps-03.${BASE_DOMAIN} apps-03
 EOF
   ;;
 esac

@@ -15,15 +15,21 @@ ENVIRONMENT="${ENVIRONMENT:-homelab}"
 DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
+case "${ENVIRONMENT}" in
+  homelab) IP_PREFIX="10.0.0" ;;
+  enclave) IP_PREFIX="10.10.12" ;;
+  *) echo "Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2 ;;
+esac
+
 # Remove any existing host entry
 sudo sed -i -e '/rancher/d' /etc/hosts
 # Add all the Rancher Nodes to /etc/hosts
 cat << EOF | tee -a  /etc/hosts
 
 # Rancher Nodes
-10.0.0.211    rancher-01.${BASE_DOMAIN} rancher-01
-10.0.0.212    rancher-02.${BASE_DOMAIN} rancher-02
-10.0.0.213    rancher-03.${BASE_DOMAIN} rancher-03
+${IP_PREFIX}.211    rancher-01.${BASE_DOMAIN} rancher-01
+${IP_PREFIX}.212    rancher-02.${BASE_DOMAIN} rancher-02
+${IP_PREFIX}.213    rancher-03.${BASE_DOMAIN} rancher-03
 EOF
 
 # Set some variables
@@ -32,7 +38,7 @@ EOF
 export MY_K3S_VERSION=v1.34.4+k3s1
 export MY_K3S_INSTALL_CHANNEL=v1.34
 export MY_K3S_TOKEN=Waggoner
-export MY_K3S_ENDPOINT=10.0.0.210
+export MY_K3S_ENDPOINT=${IP_PREFIX}.210
 export MY_K3S_HOSTNAME=rancher.${BASE_DOMAIN}
 
 # Make sure the proxy allows port 6443
@@ -116,8 +122,8 @@ kubectl -n cattle-system rollout status deploy/rancher-webhook
 
 See "systemctl status k3s.service" and "journalctl -xeu k3s.service" for details.
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
-openssl s_client -connect 10.0.0.121:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
-openssl s_client -connect 10.0.0.120:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.2
+openssl s_client -connect ${IP_PREFIX}.121:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
+openssl s_client -connect ${IP_PREFIX}.120:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.2
 
 # service ClusterIP CIDR
 echo '{"apiVersion":"v1","kind":"Service","metadata":{"name":"tst"},"spec":{"clusterIP":"1.1.1.1","ports":[{"port":443}]}}' | kubectl apply -f - 2>&1 | sed 's/.*valid IPs is //'

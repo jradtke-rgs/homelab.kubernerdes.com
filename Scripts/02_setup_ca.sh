@@ -20,7 +20,7 @@ set -euo pipefail
 #     -out <service>.crt -extfile <(printf "subjectAltName=DNS:<hostname>,IP:<ip>")
 #
 # Distribute the root CA cert to all homelab nodes:
-#   scp root@10.0.0.10:/etc/ssl/${ENVIRONMENT}-ca/ca.crt /etc/pki/trust/anchors/${ENVIRONMENT}-root-ca.crt
+#   scp root@${ADMIN_IP}:/etc/ssl/${ENVIRONMENT}-ca/ca.crt /etc/pki/trust/anchors/${ENVIRONMENT}-root-ca.crt
 #   update-ca-certificates
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -95,7 +95,7 @@ echo
 echo "==> Root CA setup complete."
 echo
 echo "    Distribute to all homelab nodes before installing services:"
-echo "      scp root@10.0.0.10:${CA_DIR}/ca.crt /etc/pki/trust/anchors/${ENVIRONMENT}-root-ca.crt"
+echo "      scp root@${ADMIN_IP}:${CA_DIR}/ca.crt /etc/pki/trust/anchors/${ENVIRONMENT}-root-ca.crt"
 echo "      update-ca-certificates"
 echo
 echo "    cert-manager integration (once RKE2/Rancher is running):"

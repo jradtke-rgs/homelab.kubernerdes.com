@@ -16,7 +16,13 @@ ENVIRONMENT="${ENVIRONMENT:-homelab}"
 DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
-REPO_SERVER=http://10.0.0.10/
+case "${ENVIRONMENT}" in
+  homelab) IP_PREFIX="10.0.0" ;;
+  enclave) IP_PREFIX="10.10.12" ;;
+  *) echo "Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2 ;;
+esac
+
+REPO_SERVER=http://${IP_PREFIX}.10/
 REPO_NAME="${BASE_DOMAIN}"
 REPO_BASE="${REPO_SERVER}${REPO_NAME}"
 echo "# NOTE: using $REPO_BASE to pull bits"
