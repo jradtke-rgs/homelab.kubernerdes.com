@@ -35,14 +35,14 @@
 ###############################################################################
 
 # Common parameters for all nodes in the Harvester installations
-set config_url http://10.0.0.8/harvester/harvester
-set base_url http://10.0.0.8/harvester/v1.7.1
+set config_url http://${DNS2_IP}/harvester/harvester
+set base_url http://${DNS2_IP}/harvester/${HARVESTER_VERSION}
 
 # File locations (adjust version as needed)
-set kernel_url ${base_url}/harvester-v1.7.1-vmlinuz-amd64
-set initrd_url ${base_url}/harvester-v1.7.1-initrd-amd64
-set initrd_name harvester-v1.7.1-initrd-amd64
-set rootfs_url ${base_url}/harvester-v1.7.1-rootfs-amd64.squashfs
+set kernel_url ${base_url}/harvester-${HARVESTER_VERSION}-vmlinuz-amd64
+set initrd_url ${base_url}/harvester-${HARVESTER_VERSION}-initrd-amd64
+set initrd_name harvester-${HARVESTER_VERSION}-initrd-amd64
+set rootfs_url ${base_url}/harvester-${HARVESTER_VERSION}-rootfs-amd64.squashfs
 
 # Common kernel parameters for all Harvester installations
 set kernel_params initrd=${initrd_name} ip=dhcp net.ifnames=1 rd.cos.disable rd.net.dhcp.retry=3 rd.noverifyssl console=tty1 root=live:${rootfs_url} harvester.install.automatic=true harvester.install.skipchecks harvester.install.mode=install
@@ -70,8 +70,8 @@ sanboot --no-describe --drive 0x80 || goto failed
 echo Deploying Harvester to nuc-01 (create mode)... static boot
 #set install_config harvester.install.config_url=${config_url}/config-create-nuc-01.yaml
 #goto deploy
-kernel http://10.0.0.8/harvester/v1.7.1/harvester-v1.7.1-vmlinuz-amd64 ip=dhcp rd.cos.disable rd.net.dhcp.retry=3 rd.noverifyssl net.ifnames=1 root=live:http://10.0.0.8/harvester/v1.7.1/harvester-v1.7.1-rootfs-amd64.squashfs console=tty1 harvester.install.automatic=true harvester.install.skipchecks=true harvester.install.config_url=http://10.0.0.8/harvester/harvester/config-create-nuc-01.yaml
-initrd http://10.0.0.8/harvester/v1.7.1/harvester-v1.7.1-initrd-amd64
+kernel http://${DNS2_IP}/harvester/${HARVESTER_VERSION}/harvester-${HARVESTER_VERSION}-vmlinuz-amd64 ip=dhcp rd.cos.disable rd.net.dhcp.retry=3 rd.noverifyssl net.ifnames=1 root=live:http://${DNS2_IP}/harvester/${HARVESTER_VERSION}/harvester-${HARVESTER_VERSION}-rootfs-amd64.squashfs console=tty1 harvester.install.automatic=true harvester.install.skipchecks=true harvester.install.config_url=http://${DNS2_IP}/harvester/harvester/config-create-nuc-01.yaml
+initrd http://${DNS2_IP}/harvester/${HARVESTER_VERSION}/harvester-${HARVESTER_VERSION}-initrd-amd64
 boot
 
 :nuc-02
