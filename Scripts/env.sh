@@ -6,36 +6,53 @@
 #   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #   source "${SCRIPT_DIR}/env.sh"
 #
+# Override ENVIRONMENT before sourcing to select a different environment:
+#
+#   ENVIRONMENT=enclave source "${SCRIPT_DIR}/env.sh"
+#
 # Scripts that run on remote nodes (cluster nodes, infra VMs) cannot source
 # this file directly — they define ENVIRONMENT/DOMAIN inline at their top.
 
-ENVIRONMENT="homelab"
-DOMAIN="kubernerdes.com"
-BASE_DOMAIN="${ENVIRONMENT}.${DOMAIN}"
+export ENVIRONMENT="${ENVIRONMENT:-homelab}"
+export DOMAIN="kubernerdes.com"
+export BASE_DOMAIN="${ENVIRONMENT}.${DOMAIN}"
 
 # Admin and infra hosts
-ADMIN_HOST="nuc-00"
-DNS_HOST="nuc-00-01"
-DNS2_HOST="nuc-00-02"
-LB_HOST="nuc-00-03"
+export ADMIN_HOST="nuc-00"
+export DNS_HOST="nuc-00-01"
+export DNS2_HOST="nuc-00-02"
+export LB_HOST="nuc-00-03"
+
+# IP addressing by environment
+case "${ENVIRONMENT}" in
+  homelab)
+    export IP_PREFIX="10.0.0"
+    ;;
+  enclave)
+    export IP_PREFIX="10.10.12"
+    ;;
+  *)
+    echo "env.sh: unknown ENVIRONMENT '${ENVIRONMENT}'" >&2
+    ;;
+esac
 
 # Admin web/repo server
-ADMIN_IP="10.0.0.10"
-REPO_BASE="http://${ADMIN_IP}/${BASE_DOMAIN}"
+export ADMIN_IP="${IP_PREFIX}.10"
+export REPO_BASE="http://${ADMIN_IP}/${BASE_DOMAIN}"
 
 # RKE2 cluster — Rancher Manager
-RANCHER_VIP="10.0.0.210"
-RANCHER_HOSTNAME="rancher.${BASE_DOMAIN}"
+export RANCHER_VIP="${IP_PREFIX}.210"
+export RANCHER_HOSTNAME="rancher.${BASE_DOMAIN}"
 
 # RKE2 cluster — Observability
-OBS_VIP="10.0.0.220"
-OBS_HOSTNAME="observability.${BASE_DOMAIN}"
+export OBS_VIP="${IP_PREFIX}.220"
+export OBS_HOSTNAME="observability.${BASE_DOMAIN}"
 
 # RKE2 cluster — Apps
-APPS_VIP="10.0.0.230"
-APPS_HOSTNAME="apps.${BASE_DOMAIN}"
+export APPS_VIP="${IP_PREFIX}.230"
+export APPS_HOSTNAME="apps.${BASE_DOMAIN}"
 
 # Kubeconfig paths
-KUBECONFIG_RANCHER="${HOME}/.kube/${ENVIRONMENT}-rancher.kubeconfig"
-KUBECONFIG_OBS="${HOME}/.kube/${ENVIRONMENT}-observability.kubeconfig"
-KUBECONFIG_APPS="${HOME}/.kube/${ENVIRONMENT}-apps.kubeconfig"
+export KUBECONFIG_RANCHER="${HOME}/.kube/${ENVIRONMENT}-rancher.kubeconfig"
+export KUBECONFIG_OBS="${HOME}/.kube/${ENVIRONMENT}-observability.kubeconfig"
+export KUBECONFIG_APPS="${HOME}/.kube/${ENVIRONMENT}-apps.kubeconfig"
