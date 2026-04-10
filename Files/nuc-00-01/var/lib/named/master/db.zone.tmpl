@@ -1,0 +1,60 @@
+$TTL 604800
+$ORIGIN ${BASE_DOMAIN}.
+@   IN SOA  nuc-00.${BASE_DOMAIN}. root.${BASE_DOMAIN}. (
+            2026040101 ; Serial — update when making changes
+            604800     ; Refresh
+            86400      ; Retry
+            2419200    ; Expire
+            604800 )   ; Negative Cache TTL
+
+            IN NS   nuc-00-01.${BASE_DOMAIN}.
+            IN NS   nuc-00-02.${BASE_DOMAIN}.
+
+; ── Infrastructure ──────────────────────────────────────────────────────────
+gateway         IN  A   ${IP_PREFIX}.1
+nuc-00-01       IN  A   ${IP_PREFIX}.8
+nuc-00-02       IN  A   ${IP_PREFIX}.9
+nuc-00          IN  A   ${IP_PREFIX}.10
+librenms        IN  A   ${IP_PREFIX}.12
+nuc-00-03       IN  A   ${IP_PREFIX}.93
+
+; ── Harvester cluster ────────────────────────────────────────────────────────
+harvester       IN  A   ${IP_PREFIX}.100
+nuc-01          IN  A   ${IP_PREFIX}.101
+nuc-02          IN  A   ${IP_PREFIX}.102
+nuc-03          IN  A   ${IP_PREFIX}.103
+nuc-01-kvm      IN  A   ${IP_PREFIX}.111
+nuc-02-kvm      IN  A   ${IP_PREFIX}.112
+nuc-03-kvm      IN  A   ${IP_PREFIX}.113
+
+; HAProxy keepalived VIP
+nuc-00-03-vip   IN  A   ${IP_PREFIX}.193
+
+; ── Rancher Manager cluster ──────────────────────────────────────────────────
+rancher         IN  A   ${IP_PREFIX}.210
+rancher-01      IN  A   ${IP_PREFIX}.211
+rancher-02      IN  A   ${IP_PREFIX}.212
+rancher-03      IN  A   ${IP_PREFIX}.213
+
+; ── Observability cluster ────────────────────────────────────────────────────
+observability       IN  A   ${IP_PREFIX}.220
+observability-01    IN  A   ${IP_PREFIX}.221
+observability-02    IN  A   ${IP_PREFIX}.222
+observability-03    IN  A   ${IP_PREFIX}.223
+
+; ── Applications cluster ─────────────────────────────────────────────────────
+apps            IN  A   ${IP_PREFIX}.230
+apps-01         IN  A   ${IP_PREFIX}.231
+apps-02         IN  A   ${IP_PREFIX}.232
+apps-03         IN  A   ${IP_PREFIX}.233
+
+; Wildcard for apps ingress
+*.${APPS_HOSTNAME}. IN  A   ${IP_PREFIX}.230
+
+; ── Other hosts ──────────────────────────────────────────────────────────────
+spark-e         IN  A   ${IP_PREFIX}.251
+
+; ── DHCP pool sample entries ─────────────────────────────────────────────────
+dhcp-1  IN  A   ${DHCP_POOL_PREFIX}.1
+dhcp-2  IN  A   ${DHCP_POOL_PREFIX}.2
+dhcp-3  IN  A   ${DHCP_POOL_PREFIX}.3

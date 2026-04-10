@@ -1,0 +1,49 @@
+$TTL 2D
+${IP_PREFIX##*.}.${IP_PREFIX%.*}.in-addr.arpa.  IN SOA  nuc-00-01.${BASE_DOMAIN}. root.${BASE_DOMAIN}. (
+                    2026040101  ; serial
+                    1D          ; refresh
+                    2H          ; retry
+                    1W          ; expiry
+                    2D )        ; minimum
+
+                    IN NS   nuc-00-01.${BASE_DOMAIN}.
+                    IN NS   nuc-00-02.${BASE_DOMAIN}.
+
+; ── Infrastructure ──────────────────────────────────────────────────────────
+1   IN  PTR gateway.${BASE_DOMAIN}.
+8   IN  PTR nuc-00-01.${BASE_DOMAIN}.
+9   IN  PTR nuc-00-02.${BASE_DOMAIN}.
+10  IN  PTR nuc-00.${BASE_DOMAIN}.
+12  IN  PTR librenms.${BASE_DOMAIN}.
+93  IN  PTR nuc-00-03.${BASE_DOMAIN}.
+
+; ── Harvester cluster ────────────────────────────────────────────────────────
+100 IN  PTR harvester.${BASE_DOMAIN}.
+101 IN  PTR nuc-01.${BASE_DOMAIN}.
+102 IN  PTR nuc-02.${BASE_DOMAIN}.
+103 IN  PTR nuc-03.${BASE_DOMAIN}.
+111 IN  PTR nuc-01-kvm.${BASE_DOMAIN}.
+112 IN  PTR nuc-02-kvm.${BASE_DOMAIN}.
+113 IN  PTR nuc-03-kvm.${BASE_DOMAIN}.
+193 IN  PTR nuc-00-03-vip.${BASE_DOMAIN}.
+
+; ── Rancher Manager cluster ──────────────────────────────────────────────────
+210 IN  PTR rancher.${BASE_DOMAIN}.
+211 IN  PTR rancher-01.${BASE_DOMAIN}.
+212 IN  PTR rancher-02.${BASE_DOMAIN}.
+213 IN  PTR rancher-03.${BASE_DOMAIN}.
+
+; ── Observability cluster ────────────────────────────────────────────────────
+220 IN  PTR observability.${BASE_DOMAIN}.
+221 IN  PTR observability-01.${BASE_DOMAIN}.
+222 IN  PTR observability-02.${BASE_DOMAIN}.
+223 IN  PTR observability-03.${BASE_DOMAIN}.
+
+; ── Applications cluster ─────────────────────────────────────────────────────
+230 IN  PTR apps.${BASE_DOMAIN}.
+231 IN  PTR apps-01.${BASE_DOMAIN}.
+232 IN  PTR apps-02.${BASE_DOMAIN}.
+233 IN  PTR apps-03.${BASE_DOMAIN}.
+
+; ── Other hosts ──────────────────────────────────────────────────────────────
+251 IN  PTR spark-e.${BASE_DOMAIN}.
