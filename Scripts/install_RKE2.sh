@@ -93,20 +93,6 @@ ${IP_PREFIX}.212    rancher-02.${BASE_DOMAIN} rancher-02
 ${IP_PREFIX}.213    rancher-03.${BASE_DOMAIN} rancher-03
 EOF
   ;;
-  observability)
-    cat <<EOF >> /etc/hosts
-${IP_PREFIX}.221    observability-01.${BASE_DOMAIN} observability-01
-${IP_PREFIX}.222    observability-02.${BASE_DOMAIN} observability-02
-${IP_PREFIX}.223    observability-03.${BASE_DOMAIN} observability-03
-EOF
-  ;;
-  apps)
-    cat <<EOF >> /etc/hosts
-${IP_PREFIX}.231    apps-01.${BASE_DOMAIN} apps-01
-${IP_PREFIX}.232    apps-02.${BASE_DOMAIN} apps-02
-${IP_PREFIX}.233    apps-03.${BASE_DOMAIN} apps-03
-EOF
-  ;;
 esac
 
 # ---------------------------------------------------------------------------
