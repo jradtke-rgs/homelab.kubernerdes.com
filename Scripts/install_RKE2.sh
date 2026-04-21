@@ -33,9 +33,9 @@ DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
 case "${ENVIRONMENT}" in
-  community)  IP_PREFIX="10.0.0";   RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh" ;;
-  carbide)    IP_PREFIX="10.10.12"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh" ;;
-  enclave)    IP_PREFIX="10.10.12"; RKE2_INSTALL_URL="http://${IP_PREFIX}.10/rke2/install.sh" ;;
+  enclave)   IP_PREFIX="10.10.12"; RKE2_INSTALL_URL="http://${IP_PREFIX}.10/rke2/install.sh" ;;
+  carbide)   IP_PREFIX="10.10.13"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh" ;;
+  community) IP_PREFIX="10.10.14"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh" ;;
   *)
     echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'"
     exit 1

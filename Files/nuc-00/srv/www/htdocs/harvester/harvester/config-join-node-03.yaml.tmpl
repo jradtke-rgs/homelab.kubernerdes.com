@@ -3,7 +3,7 @@ scheme_version: 1
 server_url: https://${HARVESTER_VIP}
 token: ${HARVESTER_TOKEN}
 os:
-  hostname: nuc-03
+  hostname: ${NUC03_HOST}
   ssh_authorized_keys:
     - ${MANSIBLE_SSH_KEY}
   password: ${HARVESTER_PASSWORD}
@@ -36,9 +36,9 @@ install:
 sans:
   - harvester.${BASE_DOMAIN}
   - ${HARVESTER_VIP}
-  - nuc-01.${BASE_DOMAIN}
-  - nuc-02.${BASE_DOMAIN}
-  - nuc-03.${BASE_DOMAIN}
+  - ${NUC01_HOST}.${BASE_DOMAIN}
+  - ${NUC02_HOST}.${BASE_DOMAIN}
+  - ${NUC03_HOST}.${BASE_DOMAIN}
   - ${NUC01_IP}
   - ${NUC02_IP}
   - ${NUC03_IP}

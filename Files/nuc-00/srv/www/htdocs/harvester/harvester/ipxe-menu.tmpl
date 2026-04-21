@@ -29,9 +29,9 @@ menu Harvester Deployment Menu — ${BASE_DOMAIN}
 item --gap --             ─────────────────────────────────────────────────
 item --key l local        Boot from local disk (default in 5s)
 item --gap --             ─────────────────────────────────────────────────
-item --key 1 nuc-01       Deploy to nuc-01 (CREATE cluster)
-item --key 2 nuc-02       Deploy to nuc-02 (join cluster)
-item --key 3 nuc-03       Deploy to nuc-03 (join cluster)
+item --key 1 node-01      Deploy to ${NUC01_HOST} (CREATE cluster)
+item --key 2 node-02      Deploy to ${NUC02_HOST} (join cluster)
+item --key 3 node-03      Deploy to ${NUC03_HOST} (join cluster)
 item --gap --             ─────────────────────────────────────────────────
 item --key 4 manual       Deploy using interactive TUI
 item --gap --             ─────────────────────────────────────────────────
@@ -43,21 +43,21 @@ choose --timeout 5000 --default local target && goto ${target}
 echo Booting from local disk...
 sanboot --no-describe --drive 0x80 || goto failed
 
-:nuc-01
-echo Deploying Harvester to nuc-01 (create mode)...
-kernel ${kernel_url} ${kernel_params} harvester.install.config_url=${config_url}/config-create-nuc-01.yaml
+:node-01
+echo Deploying Harvester to ${NUC01_HOST} (create mode)...
+kernel ${kernel_url} ${kernel_params} harvester.install.config_url=${config_url}/config-create-node-01.yaml
 initrd ${initrd_url}
 boot
 
-:nuc-02
-echo Deploying Harvester to nuc-02 (join mode)...
-kernel ${kernel_url} ${kernel_params} harvester.install.config_url=${config_url}/config-join-nuc-02.yaml
+:node-02
+echo Deploying Harvester to ${NUC02_HOST} (join mode)...
+kernel ${kernel_url} ${kernel_params} harvester.install.config_url=${config_url}/config-join-node-02.yaml
 initrd ${initrd_url}
 boot
 
-:nuc-03
-echo Deploying Harvester to nuc-03 (join mode)...
-kernel ${kernel_url} ${kernel_params} harvester.install.config_url=${config_url}/config-join-nuc-03.yaml
+:node-03
+echo Deploying Harvester to ${NUC03_HOST} (join mode)...
+kernel ${kernel_url} ${kernel_params} harvester.install.config_url=${config_url}/config-join-node-03.yaml
 initrd ${initrd_url}
 boot
 

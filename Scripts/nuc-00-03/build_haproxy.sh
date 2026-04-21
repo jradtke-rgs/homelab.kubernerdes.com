@@ -16,10 +16,10 @@ DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
 case "${ENVIRONMENT}" in
-  community)  IP_PREFIX="10.0.0"   ;;
-  carbide)    IP_PREFIX="10.10.12" ;;
-  enclave)    IP_PREFIX="10.10.12" ;;
-  *) echo "Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2 ;;
+  enclave)   IP_PREFIX="10.10.12" ;;
+  carbide)   IP_PREFIX="10.10.13" ;;
+  community) IP_PREFIX="10.10.14" ;;
+  *) echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2; exit 1 ;;
 esac
 
 REPO_BASE="http://${IP_PREFIX}.10/${BASE_DOMAIN}"

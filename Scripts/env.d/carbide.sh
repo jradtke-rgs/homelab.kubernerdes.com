@@ -9,12 +9,15 @@
 # Run modules/carbide/registry_auth.sh before the main deployment sequence.
 
 # ---------------------------------------------------------------------------
-# Hardware (update MACs for Carbide physical nodes)
+# Hardware — Gen10 NUCs (nuc-01 / nuc-02 / nuc-03), 10.10.13.0/24
 # ---------------------------------------------------------------------------
-export NIC_NAME="enp86s0"
-export NUC01_MAC=""   # TODO: set MAC for carbide nuc-01
-export NUC02_MAC=""   # TODO: set MAC for carbide nuc-02
-export NUC03_MAC=""   # TODO: set MAC for carbide nuc-03
+export NIC_NAME="eno1"
+export NUC01_HOST="nuc-01"
+export NUC02_HOST="nuc-02"
+export NUC03_HOST="nuc-03"
+export NUC01_MAC="88:ae:dd:0b:90:70"
+export NUC02_MAC="1c:69:7a:ab:23:50"
+export NUC03_MAC="88:ae:dd:0b:af:9c"
 
 # ---------------------------------------------------------------------------
 # Software versions (RGS government-hardened builds)

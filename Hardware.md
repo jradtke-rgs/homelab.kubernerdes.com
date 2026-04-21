@@ -4,34 +4,51 @@ Physical hardware, bill of materials, and network switch layout.
 
 ## Systems
 
-| System | Purpose | Model | CPU | Cores | RAM (GB) | Disk0 (SSD GB) | Disk1 (NVMe GB) |
-|:-------|:--------|:------|:----|------:|:--------:|---------------:|----------------:|
-| nuc-00 | Admin Host | NUC10i7FNK | i7-10710U | 12 | 64 | — | 932 |
-| nuc-01 | Harvester node 1 | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
-| nuc-02 | Harvester node 2 | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
-| nuc-03 | Harvester node 3 | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
+| System | Purpose | Environment | Model | CPU | Cores | RAM (GB) | Disk0 (SSD GB) | Disk1 (NVMe GB) |
+|:-------|:--------|:------------|:------|:----|------:|:--------:|---------------:|----------------:|
+| nuc-00 | Admin Host | (all) | NUC13ANHi3 | i3-1315U | 6 | 32 | — | 512 |
+| nuc-01 | Harvester node 1 | enclave / carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
+| nuc-02 | Harvester node 2 | enclave / carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
+| nuc-03 | Harvester node 3 | enclave / carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
+| nuc-11 | Harvester node 1 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
+| nuc-12 | Harvester node 2 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
+| nuc-13 | Harvester node 3 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
 
-> All nodes are NUC10 (10th gen) units. Harvester nodes have additional storage
-> beyond the listed disks (sdb/sdc/sdd ranging 2G–99G).
+> Gen10 NUCs (nuc-01/02/03) serve enclave and carbide — mutually exclusive, never simultaneously deployed.
+> Gen13 NUCs (nuc-11/12/13) are dedicated to community and can run in parallel with enclave or carbide.
 
 ## IP Assignments
 
-All IPs are derived from `${IP_PREFIX}` set in `Scripts/env.sh`.
+The supernet is `10.10.12.0/22`. Each environment occupies one `/24`; the last `/24` is the DHCP pool.
+
+| Subnet | Environment | Nodes |
+|:-------|:------------|:------|
+| 10.10.12.0/24 | enclave | Gen10 NUCs (nuc-01/02/03) |
+| 10.10.13.0/24 | carbide | Gen10 NUCs (nuc-01/02/03) |
+| 10.10.14.0/24 | community | Gen13 NUCs (nuc-11/12/13) |
+| 10.10.15.0/24 | (reserved) | DHCP dynamic pool |
+
+Infrastructure IPs (shared / always present on 10.10.12.x):
+
+| IP | Hostname | Purpose |
+|:---|:---------|:--------|
+| 10.10.12.1 | gateway | Default gateway / router |
+| 10.10.12.8 | nuc-00-01 | DNS primary + DHCP + TFTP (infra VM on nuc-00) |
+| 10.10.12.9 | nuc-00-02 | DNS secondary (infra VM on nuc-00) |
+| 10.10.12.10 | nuc-00 | Admin host (Apache + KVM) |
+| 10.10.12.12 | librenms | Network monitoring (VM, optional) |
+| 10.10.12.93 | nuc-00-03 | HAProxy load balancer (infra VM on nuc-00) |
+| 10.10.12.193 | nuc-00-03-vip | HAProxy Keepalived VIP |
+
+Per-environment IPs (last octet identical across all environments, prefix differs):
 
 | Last Octet | Hostname | Purpose |
 |:----------:|:---------|:--------|
-| .1 | gateway | Default gateway / router |
-| .8 | nuc-00-01 | DNS primary + DHCP + TFTP (infra VM on nuc-00) |
-| .9 | nuc-00-02 | DNS secondary (infra VM on nuc-00) |
-| .10 | nuc-00 | Admin host (Apache + KVM) |
-| .12 | librenms | Network monitoring (VM, optional) |
-| .93 | nuc-00-03 | HAProxy load balancer (infra VM on nuc-00) |
 | .100 | harvester | Harvester cluster VIP |
-| .101 | nuc-01 | Harvester node 1 |
-| .102 | nuc-02 | Harvester node 2 |
-| .103 | nuc-03 | Harvester node 3 |
+| .101 | nuc-01 or nuc-11 | Harvester node 1 |
+| .102 | nuc-02 or nuc-12 | Harvester node 2 |
+| .103 | nuc-03 or nuc-13 | Harvester node 3 |
 | .111-.113 | nuc-0x-kvm | KVM copy IPs (reserved) |
-| .193 | nuc-00-03-vip | HAProxy Keepalived VIP |
 | .210 | rancher | Rancher Manager cluster VIP |
 | .211-.213 | rancher-01/02/03 | Rancher Manager nodes |
 | .220 | observability | Observability cluster VIP |
@@ -39,7 +56,6 @@ All IPs are derived from `${IP_PREFIX}` set in `Scripts/env.sh`.
 | .230 | apps | Applications cluster VIP |
 | .231-.233 | apps-01/02/03 | Applications cluster nodes |
 | .251 | spark-e | Optional hardware |
-| .3.1–.3.254 | (dynamic) | DHCP pool (last /24 of the /22) |
 
 Wildcard DNS: `*.apps.${ENVIRONMENT}.kubernerdes.com` → `${IP_PREFIX}.230`
 
@@ -78,9 +94,9 @@ MAC addresses are set per environment in `Scripts/env.d/${ENVIRONMENT}.sh`.
 
 | Host | MAC | Environment |
 |:-----|:----|:------------|
-| nuc-01 | 88:ae:dd:0b:90:70 | community |
-| nuc-02 | 1c:69:7a:ab:23:50 | community |
-| nuc-03 | 88:ae:dd:0b:af:9c | community |
-| nuc-01 | *(TBD)* | carbide/enclave |
-| nuc-02 | *(TBD)* | carbide/enclave |
-| nuc-03 | *(TBD)* | carbide/enclave |
+| nuc-01 | 88:ae:dd:0b:90:70 | enclave / carbide (Gen10) |
+| nuc-02 | 1c:69:7a:ab:23:50 | enclave / carbide (Gen10) |
+| nuc-03 | 88:ae:dd:0b:af:9c | enclave / carbide (Gen10) |
+| nuc-11 | 48:21:0b:65:ce:e5 | community (Gen13) |
+| nuc-12 | 48:21:0b:65:c2:c7 | community (Gen13) |
+| nuc-13 | 48:21:0b:5d:7a:e6 | community (Gen13) |

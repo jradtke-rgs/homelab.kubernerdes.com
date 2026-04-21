@@ -19,12 +19,12 @@ ${IP_PREFIX##*.}.${IP_PREFIX%.*}.in-addr.arpa.  IN SOA  nuc-00-01.${BASE_DOMAIN}
 
 ; ── Harvester cluster ────────────────────────────────────────────────────────
 100 IN  PTR harvester.${BASE_DOMAIN}.
-101 IN  PTR nuc-01.${BASE_DOMAIN}.
-102 IN  PTR nuc-02.${BASE_DOMAIN}.
-103 IN  PTR nuc-03.${BASE_DOMAIN}.
-111 IN  PTR nuc-01-kvm.${BASE_DOMAIN}.
-112 IN  PTR nuc-02-kvm.${BASE_DOMAIN}.
-113 IN  PTR nuc-03-kvm.${BASE_DOMAIN}.
+101 IN  PTR ${NUC01_HOST}.${BASE_DOMAIN}.
+102 IN  PTR ${NUC02_HOST}.${BASE_DOMAIN}.
+103 IN  PTR ${NUC03_HOST}.${BASE_DOMAIN}.
+111 IN  PTR ${NUC01_HOST}-kvm.${BASE_DOMAIN}.
+112 IN  PTR ${NUC02_HOST}-kvm.${BASE_DOMAIN}.
+113 IN  PTR ${NUC03_HOST}-kvm.${BASE_DOMAIN}.
 193 IN  PTR nuc-00-03-vip.${BASE_DOMAIN}.
 
 ; ── Rancher Manager cluster ──────────────────────────────────────────────────

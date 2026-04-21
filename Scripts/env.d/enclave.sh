@@ -13,12 +13,15 @@
 #   3. Continue with normal numbered scripts (00_ through 80_)
 
 # ---------------------------------------------------------------------------
-# Hardware (update MACs for Enclave physical nodes)
+# Hardware — Gen10 NUCs (nuc-01 / nuc-02 / nuc-03), 10.10.12.0/24
 # ---------------------------------------------------------------------------
-export NIC_NAME="enp86s0"
-export NUC01_MAC=""   # TODO: set MAC for enclave nuc-01
-export NUC02_MAC=""   # TODO: set MAC for enclave nuc-02
-export NUC03_MAC=""   # TODO: set MAC for enclave nuc-03
+export NIC_NAME="eno1"
+export NUC01_HOST="nuc-01"
+export NUC02_HOST="nuc-02"
+export NUC03_HOST="nuc-03"
+export NUC01_MAC="88:ae:dd:0b:90:70"
+export NUC02_MAC="1c:69:7a:ab:23:50"
+export NUC03_MAC="88:ae:dd:0b:af:9c"
 
 # ---------------------------------------------------------------------------
 # Software versions (RGS government-hardened builds)

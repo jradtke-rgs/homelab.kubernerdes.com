@@ -19,13 +19,13 @@ librenms        IN  A   ${IP_PREFIX}.12
 nuc-00-03       IN  A   ${IP_PREFIX}.93
 
 ; ── Harvester cluster ────────────────────────────────────────────────────────
-harvester       IN  A   ${IP_PREFIX}.100
-nuc-01          IN  A   ${IP_PREFIX}.101
-nuc-02          IN  A   ${IP_PREFIX}.102
-nuc-03          IN  A   ${IP_PREFIX}.103
-nuc-01-kvm      IN  A   ${IP_PREFIX}.111
-nuc-02-kvm      IN  A   ${IP_PREFIX}.112
-nuc-03-kvm      IN  A   ${IP_PREFIX}.113
+harvester           IN  A   ${IP_PREFIX}.100
+${NUC01_HOST}       IN  A   ${IP_PREFIX}.101
+${NUC02_HOST}       IN  A   ${IP_PREFIX}.102
+${NUC03_HOST}       IN  A   ${IP_PREFIX}.103
+${NUC01_HOST}-kvm   IN  A   ${IP_PREFIX}.111
+${NUC02_HOST}-kvm   IN  A   ${IP_PREFIX}.112
+${NUC03_HOST}-kvm   IN  A   ${IP_PREFIX}.113
 
 ; HAProxy keepalived VIP
 nuc-00-03-vip   IN  A   ${IP_PREFIX}.193

@@ -19,7 +19,12 @@ ENVIRONMENT="${ENVIRONMENT:-community}"
 DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
-IP_PREFIX="10.10.12"
+case "${ENVIRONMENT}" in
+  enclave)   IP_PREFIX="10.10.12" ;;
+  carbide)   IP_PREFIX="10.10.13" ;;
+  community) IP_PREFIX="10.10.14" ;;
+  *) echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2; exit 1 ;;
+esac
 
 REPO_BASE="http://${IP_PREFIX}.10/${BASE_DOMAIN}"
 echo "# NOTE: using ${REPO_BASE} to pull bits"

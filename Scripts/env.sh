@@ -14,33 +14,42 @@
 # this file directly — they set ENVIRONMENT/DOMAIN/IP_PREFIX inline at top.
 # See install_RKE2.sh and nuc-00-*/post_install.sh for that pattern.
 #
-# ENVIRONMENTS (all use 10.10.12.0/22; differ only by BASE_DOMAIN):
-#   community  — SUSE/upstream bits from public registries
-#   carbide    — RGS software from RGS registry over internet
-#   enclave    — RGS software via Hauler + local Harbor (air-gap)
+# ENVIRONMENTS — all share the 10.10.12.0/22 supernet; each occupies one /24:
+#   enclave    — 10.10.12.0/24 — Gen10 NUCs — RGS via Hauler + Harbor (air-gap)
+#   carbide    — 10.10.13.0/24 — Gen10 NUCs — RGS software from RGS registry
+#   community  — 10.10.14.0/24 — Gen13 NUCs — SUSE/upstream bits, public registries
+#   (reserved) — 10.10.15.0/24 — DHCP dynamic pool
+#
+# NUC01_HOST / NUC02_HOST / NUC03_HOST are set per environment in env.d/:
+#   enclave/carbide: nuc-01 / nuc-02 / nuc-03  (Gen10 NUCs)
+#   community:       nuc-11 / nuc-12 / nuc-13  (Gen13 NUCs)
 
 export ENVIRONMENT="${ENVIRONMENT:-community}"
 export DOMAIN="kubernerdes.com"
 export BASE_DOMAIN="${ENVIRONMENT}.${DOMAIN}"
 
 # ---------------------------------------------------------------------------
-# IP addressing — all environments use 10.10.12.0/22; environments differ
-# only by BASE_DOMAIN (community/carbide/enclave.kubernerdes.com)
+# IP addressing
 # ---------------------------------------------------------------------------
-export IP_PREFIX="10.10.12"
 
-# Subnet derived values (all environments use /22)
-export SUBNET_CIDR="${IP_PREFIX}.0/22"
+# Per-environment /24 prefix — all within the 10.10.12.0/22 supernet
+case "${ENVIRONMENT}" in
+  enclave)   export IP_PREFIX="10.10.12" ;;
+  carbide)   export IP_PREFIX="10.10.13" ;;
+  community) export IP_PREFIX="10.10.14" ;;
+  *) echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2; return 1 ;;
+esac
+
+# Supernet constants (fixed — shared by all environments and the DHCP pool)
+export SUPERNET_PREFIX="10.10.12"
+export SUBNET_CIDR="${SUPERNET_PREFIX}.0/22"
 export SUBNET_MASK="255.255.252.0"
-export GATEWAY="${IP_PREFIX}.1"
+export GATEWAY="${SUPERNET_PREFIX}.1"
 
-# DHCP dynamic pool — the last /24 of the /22
-_ip_stem="${IP_PREFIX%.*}"
-_ip_third="${IP_PREFIX##*.}"
-export DHCP_POOL_PREFIX="${_ip_stem}.$((${_ip_third} + 3))"
+# DHCP dynamic pool — last /24 of the /22, reserved across all environments
+export DHCP_POOL_PREFIX="10.10.15"
 export DHCP_RANGE_START="${DHCP_POOL_PREFIX}.1"
 export DHCP_RANGE_END="${DHCP_POOL_PREFIX}.254"
-unset _ip_stem _ip_third
 
 # ---------------------------------------------------------------------------
 # Infrastructure hosts
