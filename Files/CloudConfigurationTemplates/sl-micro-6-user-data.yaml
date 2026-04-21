@@ -1,4 +1,5 @@
 #cloud-config
+---
 # SL-Micro 6.x cloud-init user-data template
 #
 # Used for apps-* and observability-* nodes deployed on Harvester

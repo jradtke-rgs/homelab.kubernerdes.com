@@ -1,4 +1,5 @@
 #cloud-config
+---
 # SLES 15 / OpenSUSE Leap cloud-init template
 #
 # Assigns static IPs based on hostname at first boot.
