@@ -14,27 +14,20 @@
 # this file directly — they set ENVIRONMENT/DOMAIN/IP_PREFIX inline at top.
 # See install_RKE2.sh and nuc-00-*/post_install.sh for that pattern.
 #
-# ENVIRONMENTS:
-#   community  — SUSE/upstream bits from public registries  (10.0.0.0/22)
-#   carbide    — RGS software from RGS registry over internet (10.10.12.0/22)
-#   enclave    — RGS software via Hauler + local Harbor (air-gap) (10.10.12.0/22)
+# ENVIRONMENTS (all use 10.10.12.0/22; differ only by BASE_DOMAIN):
+#   community  — SUSE/upstream bits from public registries
+#   carbide    — RGS software from RGS registry over internet
+#   enclave    — RGS software via Hauler + local Harbor (air-gap)
 
 export ENVIRONMENT="${ENVIRONMENT:-community}"
 export DOMAIN="kubernerdes.com"
 export BASE_DOMAIN="${ENVIRONMENT}.${DOMAIN}"
 
 # ---------------------------------------------------------------------------
-# IP addressing — set IP_PREFIX per environment; all IPs are derived below
+# IP addressing — all environments use 10.10.12.0/22; environments differ
+# only by BASE_DOMAIN (community/carbide/enclave.kubernerdes.com)
 # ---------------------------------------------------------------------------
-case "${ENVIRONMENT}" in
-  community)  export IP_PREFIX="10.0.0"   ;;
-  carbide)    export IP_PREFIX="10.10.12" ;;
-  enclave)    export IP_PREFIX="10.10.12" ;;
-  *)
-    echo "env.sh: unknown ENVIRONMENT '${ENVIRONMENT}'" >&2
-    return 1 2>/dev/null || exit 1
-    ;;
-esac
+export IP_PREFIX="10.10.12"
 
 # Subnet derived values (all environments use /22)
 export SUBNET_CIDR="${IP_PREFIX}.0/22"
