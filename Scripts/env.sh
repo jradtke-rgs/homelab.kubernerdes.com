@@ -59,9 +59,9 @@ export DNS_HOST="nuc-00-01"
 export DNS2_HOST="nuc-00-02"
 export LB_HOST="nuc-00-03"
 
-# Infrastructure IPs
-export DNS1_IP="${IP_PREFIX}.8"
-export DNS2_IP="${IP_PREFIX}.9"
+# Infrastructure IPs — DNS is shared across all environments (supernet addresses)
+export DNS1_IP="${SUPERNET_PREFIX}.8"
+export DNS2_IP="${SUPERNET_PREFIX}.9"
 export ADMIN_IP="${IP_PREFIX}.10"
 export LB_IP="${IP_PREFIX}.93"
 
@@ -104,6 +104,46 @@ export APPS_HOSTNAME="apps.${BASE_DOMAIN}"
 export APPS_NODE_01="${IP_PREFIX}.231"
 export APPS_NODE_02="${IP_PREFIX}.232"
 export APPS_NODE_03="${IP_PREFIX}.233"
+
+# ---------------------------------------------------------------------------
+# Shared HAProxy variables — nuc-00-03 serves both enclave and community
+# from a single haproxy.cfg; these vars are used by the haproxy template
+# regardless of which ENVIRONMENT context env.sh is sourced in.
+# ---------------------------------------------------------------------------
+_ENCLAVE_PFX="10.10.12"
+_COMMUNITY_PFX="10.10.14"
+
+export ENCLAVE_RANCHER_VIP="${_ENCLAVE_PFX}.210"
+export ENCLAVE_RANCHER_NODE_01="${_ENCLAVE_PFX}.211"
+export ENCLAVE_RANCHER_NODE_02="${_ENCLAVE_PFX}.212"
+export ENCLAVE_RANCHER_NODE_03="${_ENCLAVE_PFX}.213"
+
+export ENCLAVE_OBS_VIP="${_ENCLAVE_PFX}.220"
+export ENCLAVE_OBS_NODE_01="10.10.15.37"
+export ENCLAVE_OBS_NODE_02="10.10.15.38"
+export ENCLAVE_OBS_NODE_03="10.10.15.39"
+
+export ENCLAVE_APPS_VIP="${_ENCLAVE_PFX}.230"
+export ENCLAVE_APPS_NODE_01="10.10.15.106"
+export ENCLAVE_APPS_NODE_02="10.10.15.107"
+export ENCLAVE_APPS_NODE_03="10.10.15.108"
+
+export COMMUNITY_RANCHER_VIP="${_COMMUNITY_PFX}.210"
+export COMMUNITY_RANCHER_NODE_01="${_COMMUNITY_PFX}.211"
+export COMMUNITY_RANCHER_NODE_02="${_COMMUNITY_PFX}.212"
+export COMMUNITY_RANCHER_NODE_03="${_COMMUNITY_PFX}.213"
+
+export COMMUNITY_OBS_VIP="${_COMMUNITY_PFX}.220"
+export COMMUNITY_OBS_NODE_01="10.10.15.119"
+export COMMUNITY_OBS_NODE_02="10.10.15.120"
+export COMMUNITY_OBS_NODE_03="10.10.15.121"
+
+export COMMUNITY_APPS_VIP="${_COMMUNITY_PFX}.230"
+export COMMUNITY_APPS_NODE_01="${_COMMUNITY_PFX}.231"
+export COMMUNITY_APPS_NODE_02="${_COMMUNITY_PFX}.232"
+export COMMUNITY_APPS_NODE_03="${_COMMUNITY_PFX}.233"
+
+unset _ENCLAVE_PFX _COMMUNITY_PFX
 
 # ---------------------------------------------------------------------------
 # Kubeconfig paths (stored on nuc-00)
