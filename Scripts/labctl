@@ -1,0 +1,442 @@
+#!/usr/bin/env bash
+# labctl — Lab lifecycle control
+#
+# Usage:
+#   labctl shutdown   Cleanly shut down all lab components in dependency order
+#   labctl startup    Power everything back on in the correct sequence
+#
+# ENVIRONMENT controls which cluster is managed (community | carbide | enclave).
+# Default: community
+#
+# Run from nuc-00 (the admin node).  Requires:
+#   - kubectl in PATH with a valid KUBECONFIG_HARVESTER at ~/.kube/${ENVIRONMENT}-harvester.kubeconfig
+#   - virsh (libvirt) for local infra VMs (nuc-00-01/02/03)
+#   - SSH key at ${HOME}/.ssh/id_rsa-${ENVIRONMENT} with passwordless access to Harvester nodes
+#   - wake_host in the same directory as this script
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env.sh
+source "${SCRIPT_DIR}/env.sh"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') [labctl] $*"
+}
+
+die() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') [labctl] ERROR: $*" >&2
+  exit 1
+}
+
+# ---------------------------------------------------------------------------
+# Preflight checks
+# ---------------------------------------------------------------------------
+# Verify a kubeconfig exists; print a helpful tip and exit if not.
+require_kubeconfig() {
+  local label="$1"
+  local path="$2"
+  local tip="$3"
+  if [[ ! -f "${path}" ]]; then
+    die "Missing kubeconfig for ${label}: ${path}
+       ${tip}"
+  fi
+}
+
+preflight_harvester() {
+  require_kubeconfig "Harvester" "${KUBECONFIG_HARVESTER}" \
+    "Retrieve it from a Harvester node and save it:
+         ssh rancher@${NUC01_IP} 'sudo cat /etc/rancher/rke2/rke2.yaml' \\
+           | sed 's/127.0.0.1/${HARVESTER_VIP}/' > ${KUBECONFIG_HARVESTER}
+         chmod 600 ${KUBECONFIG_HARVESTER}"
+}
+
+preflight_downstream() {
+  require_kubeconfig "Rancher Manager" "${KUBECONFIG_RANCHER}" \
+    "Retrieve it from the rancher-01 node:
+         scp sles@${RANCHER_NODE_01}:.kube/config ${KUBECONFIG_RANCHER}
+         sed -i 's/127.0.0.1/${RANCHER_VIP}/' ${KUBECONFIG_RANCHER}"
+  require_kubeconfig "Observability" "${KUBECONFIG_OBS}" \
+    "Retrieve it from the observability-01 node:
+         scp sles@${OBS_NODE_01}:.kube/config ${KUBECONFIG_OBS}
+         sed -i 's/127.0.0.1/${OBS_VIP}/' ${KUBECONFIG_OBS}"
+  require_kubeconfig "Apps" "${KUBECONFIG_APPS}" \
+    "Retrieve it from the apps-01 node:
+         scp sles@${APPS_NODE_01}:.kube/config ${KUBECONFIG_APPS}
+         sed -i 's/127.0.0.1/${APPS_VIP}/' ${KUBECONFIG_APPS}"
+}
+
+# ---------------------------------------------------------------------------
+# Harvester VM discovery
+# ---------------------------------------------------------------------------
+
+# Return names of all VMs currently set to running=true, sorted, one per line
+get_running_vms() {
+  kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" get virtualmachine \
+    -n default --no-headers \
+    -o custom-columns='NAME:.metadata.name,RUNNING:.spec.running' \
+    --request-timeout=30s 2>/dev/null \
+    | awk '$2=="true" {print $1}' | sort
+}
+
+# Return names of all VMs currently set to running=false, sorted, one per line
+get_stopped_vms() {
+  kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" get virtualmachine \
+    -n default --no-headers \
+    -o custom-columns='NAME:.metadata.name,RUNNING:.spec.running' \
+    --request-timeout=30s 2>/dev/null \
+    | awk '$2=="false" {print $1}' | sort
+}
+
+# ---------------------------------------------------------------------------
+# Harvester VM helpers (VirtualMachine CRD, default namespace)
+# ---------------------------------------------------------------------------
+stop_vm() {
+  local vm="$1"
+  log "  Stopping VM: ${vm}"
+  kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" \
+    patch virtualmachine "${vm}" -n default \
+    --type merge -p '{"spec":{"running":false}}' \
+    --request-timeout=30s 2>/dev/null || true
+}
+
+start_vm() {
+  local vm="$1"
+  log "  Starting VM: ${vm}"
+  kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" \
+    patch virtualmachine "${vm}" -n default \
+    --type merge -p '{"spec":{"running":true}}' \
+    --request-timeout=30s
+}
+
+# Wait until the VirtualMachineInstance for a VM no longer exists (i.e. VM fully stopped)
+wait_vm_stopped() {
+  local vm="$1"
+  local timeout="${2:-300}"
+  local elapsed=0
+  log "  Waiting for VM '${vm}' to stop (timeout: ${timeout}s)..."
+  while kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" \
+      get virtualmachineinstance "${vm}" -n default \
+      --request-timeout=10s &>/dev/null; do
+    if (( elapsed >= timeout )); then
+      log "  WARNING: VM '${vm}' did not stop within ${timeout}s — continuing"
+      return 1
+    fi
+    sleep 10
+    (( elapsed += 10 ))
+  done
+  log "  VM '${vm}' stopped."
+}
+
+# Wait until the VirtualMachineInstance reaches Running phase
+wait_vm_running() {
+  local vm="$1"
+  local timeout="${2:-300}"
+  local elapsed=0
+  log "  Waiting for VM '${vm}' to reach Running state (timeout: ${timeout}s)..."
+  while true; do
+    local phase
+    phase=$(kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" \
+      get virtualmachineinstance "${vm}" -n default \
+      -o jsonpath='{.status.phase}' --request-timeout=10s 2>/dev/null || true)
+    if [[ "${phase}" == "Running" ]]; then
+      log "  VM '${vm}' is Running."
+      return 0
+    fi
+    if (( elapsed >= timeout )); then
+      log "  WARNING: VM '${vm}' did not reach Running within ${timeout}s — continuing"
+      return 1
+    fi
+    sleep 15
+    (( elapsed += 15 ))
+  done
+}
+
+# ---------------------------------------------------------------------------
+# Cluster readiness helper
+# ---------------------------------------------------------------------------
+# Wait until all expected nodes in a cluster show Ready
+wait_nodes_ready() {
+  local kubeconfig="$1"
+  local expected_count="$2"
+  local timeout="${3:-600}"
+  local elapsed=0
+  log "  Waiting for ${expected_count} node(s) Ready (timeout: ${timeout}s)..."
+  while true; do
+    local ready_count
+    ready_count=$(kubectl --kubeconfig="${kubeconfig}" get nodes \
+      --no-headers --request-timeout=15s 2>/dev/null \
+      | grep -c ' Ready ' || true)
+    if (( ready_count >= expected_count )); then
+      log "  ${ready_count}/${expected_count} nodes Ready."
+      return 0
+    fi
+    if (( elapsed >= timeout )); then
+      log "  WARNING: only ${ready_count}/${expected_count} nodes Ready after ${timeout}s — continuing"
+      return 1
+    fi
+    log "  ${ready_count}/${expected_count} nodes Ready — retrying in 30s..."
+    sleep 30
+    (( elapsed += 30 ))
+  done
+}
+
+# ---------------------------------------------------------------------------
+# Network helpers
+# ---------------------------------------------------------------------------
+# Wait until a TCP port on an IP is open
+wait_port_open() {
+  local ip="$1"
+  local port="$2"
+  local timeout="${3:-120}"
+  local elapsed=0
+  log "  Waiting for ${ip}:${port} to open (timeout: ${timeout}s)..."
+  while ! nc -zw5 "${ip}" "${port}" &>/dev/null; do
+    if (( elapsed >= timeout )); then
+      log "  WARNING: ${ip}:${port} did not open within ${timeout}s — continuing"
+      return 1
+    fi
+    sleep 10
+    (( elapsed += 10 ))
+  done
+  log "  ${ip}:${port} is open."
+}
+
+# Wait until a host stops responding to ping (confirms shutdown)
+wait_ping_down() {
+  local ip="$1"
+  local timeout="${2:-180}"
+  local elapsed=0
+  log "  Waiting for ${ip} to go offline (timeout: ${timeout}s)..."
+  while ping -c1 -W2 "${ip}" &>/dev/null; do
+    if (( elapsed >= timeout )); then
+      log "  WARNING: ${ip} still online after ${timeout}s — continuing"
+      return 1
+    fi
+    sleep 10
+    (( elapsed += 10 ))
+  done
+  log "  ${ip} is offline."
+}
+
+# ---------------------------------------------------------------------------
+# Shutdown
+# ---------------------------------------------------------------------------
+do_shutdown() {
+  preflight_harvester
+
+  log "========================================================"
+  log "Lab shutdown — ENVIRONMENT=${ENVIRONMENT}"
+  log "========================================================"
+
+  # Discover what's actually running — partition into rancher vs everything else
+  local all_running non_rancher_vms rancher_vms
+  all_running=$(get_running_vms)
+  non_rancher_vms=$(echo "${all_running}" | grep -v '^rancher-' || true)
+  rancher_vms=$(echo "${all_running}"     | grep    '^rancher-' || true)
+
+  # --- 1. Stop non-rancher VMs (apps, observability, and anything else) ---
+  if [[ -n "${non_rancher_vms}" ]]; then
+    log "[ 1/5 ] Stopping non-rancher VMs..."
+    while IFS= read -r vm; do
+      [[ -z "${vm}" ]] && continue
+      stop_vm "${vm}"
+    done <<< "${non_rancher_vms}"
+
+    log "        Waiting for non-rancher VMs to stop..."
+    while IFS= read -r vm; do
+      [[ -z "${vm}" ]] && continue
+      wait_vm_stopped "${vm}" 300 || true
+    done <<< "${non_rancher_vms}"
+  else
+    log "[ 1/5 ] No non-rancher VMs running — skipping."
+  fi
+
+  # --- 2. Stop rancher VMs ---
+  if [[ -n "${rancher_vms}" ]]; then
+    log "[ 2/5 ] Stopping rancher VMs..."
+    while IFS= read -r vm; do
+      [[ -z "${vm}" ]] && continue
+      stop_vm "${vm}"
+    done <<< "${rancher_vms}"
+
+    log "        Waiting for rancher VMs to stop..."
+    while IFS= read -r vm; do
+      [[ -z "${vm}" ]] && continue
+      wait_vm_stopped "${vm}" 300 || true
+    done <<< "${rancher_vms}"
+  else
+    log "[ 2/5 ] No rancher VMs running — skipping."
+  fi
+
+  # --- 3. Shutdown Harvester nodes ---
+  log "[ 3/5 ] Shutting down Harvester nodes..."
+  for ip in "${NUC01_IP}" "${NUC02_IP}" "${NUC03_IP}"; do
+    log "  Sending shutdown to ${ip}..."
+    # shellcheck disable=SC2086
+    ssh ${SSH_OPTS} "rancher@${ip}" "sudo shutdown -h now" 2>/dev/null || true
+    sleep 15
+  done
+
+  # --- 4. Wait for Harvester nodes to go offline ---
+  log "[ 4/5 ] Waiting for Harvester nodes to power off..."
+  for ip in "${NUC01_IP}" "${NUC02_IP}" "${NUC03_IP}"; do
+    wait_ping_down "${ip}" 180 || true
+  done
+
+  # --- 5. Shutdown nuc-00 infrastructure VMs ---
+  log "[ 5/5 ] Shutting down infrastructure VMs (virsh)..."
+  for vm in nuc-00-03 nuc-00-02 nuc-00-01; do
+    log "  virsh shutdown ${vm}"
+    virsh shutdown "${vm}" 2>/dev/null || log "  (${vm} may already be stopped)"
+  done
+
+  log "========================================================"
+  log "Shutdown complete."
+  log "========================================================"
+}
+
+# ---------------------------------------------------------------------------
+# Startup
+# ---------------------------------------------------------------------------
+do_startup() {
+  preflight_harvester
+  preflight_downstream
+
+  log "========================================================"
+  log "Lab startup — ENVIRONMENT=${ENVIRONMENT}"
+  log "========================================================"
+
+  # --- 1. Start infrastructure VMs on nuc-00 ---
+  log "[ 1/5 ] Starting infrastructure VMs (virsh)..."
+  for vm in nuc-00-01 nuc-00-02 nuc-00-03; do
+    log "  virsh start ${vm}"
+    virsh start "${vm}" 2>/dev/null || log "  (${vm} may already be running)"
+  done
+  # Wait for DNS (port 53 on DNS1_IP) to confirm infra VMs are up
+  wait_port_open "${DNS1_IP}" 53 120 || true
+
+  # --- 2. Wake Harvester nodes ---
+  log "[ 2/5 ] Sending Wake-on-LAN to Harvester nodes..."
+  for host in "${NUC01_HOST}" "${NUC02_HOST}" "${NUC03_HOST}"; do
+    log "  Waking ${host}..."
+    ENVIRONMENT="${ENVIRONMENT}" "${SCRIPT_DIR}/wake_host" "${host}"
+    sleep 20
+  done
+
+  # --- 3. Wait for Harvester to settle ---
+  log "[ 3/5 ] Waiting for Harvester cluster to be ready..."
+  wait_nodes_ready "${KUBECONFIG_HARVESTER}" 3 600
+
+  # --- 4. Start rancher VMs and wait for cluster ---
+  log "[ 4/5 ] Starting rancher cluster VMs..."
+  for vm in rancher-01 rancher-02 rancher-03; do
+    start_vm "${vm}"
+    wait_vm_running "${vm}" 300 || true
+  done
+  log "  Waiting for rancher cluster nodes..."
+  wait_nodes_ready "${KUBECONFIG_RANCHER}" 3 600 || true
+
+  # --- 5. Start remaining stopped VMs (non-rancher), 1 at a time ---
+  log "[ 5/5 ] Starting remaining VMs (1 at a time)..."
+  local stopped_non_rancher
+  stopped_non_rancher=$(get_stopped_vms | grep -v '^rancher-' || true)
+
+  if [[ -n "${stopped_non_rancher}" ]]; then
+    while IFS= read -r vm; do
+      [[ -z "${vm}" ]] && continue
+      start_vm "${vm}"
+      wait_vm_running "${vm}" 300 || true
+      sleep 30
+    done <<< "${stopped_non_rancher}"
+  else
+    log "  No additional stopped VMs found."
+  fi
+
+  log "========================================================"
+  log "Startup complete."
+  log "  Harvester VIP : ${HARVESTER_VIP}"
+  log "  Rancher URL   : https://${RANCHER_HOSTNAME}"
+  log "========================================================"
+}
+
+# ---------------------------------------------------------------------------
+# Status
+# ---------------------------------------------------------------------------
+do_status() {
+  echo "========================================================"
+  echo "Lab status — ENVIRONMENT=${ENVIRONMENT}"
+  echo "========================================================"
+
+  # --- Infrastructure VMs (virsh, local to nuc-00) ---
+  echo ""
+  echo "[ Infrastructure VMs (virsh) ]"
+  virsh list --all 2>/dev/null \
+    | awk 'NR<=2 || /nuc-00-/' \
+    || echo "  (virsh unavailable)"
+
+  # --- Harvester nodes ---
+  echo ""
+  echo "[ Harvester nodes ]"
+  if [[ -f "${KUBECONFIG_HARVESTER}" ]]; then
+    kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" get nodes \
+      --request-timeout=10s 2>/dev/null \
+      || echo "  (Harvester API unreachable)"
+  else
+    echo "  (kubeconfig not found: ${KUBECONFIG_HARVESTER})"
+  fi
+
+  # --- Harvester VMs ---
+  echo ""
+  echo "[ Harvester VMs ]"
+  if [[ -f "${KUBECONFIG_HARVESTER}" ]]; then
+    kubectl --kubeconfig="${KUBECONFIG_HARVESTER}" get virtualmachine \
+      -n default --request-timeout=10s 2>/dev/null \
+      || echo "  (Harvester API unreachable)"
+  else
+    echo "  (kubeconfig not found: ${KUBECONFIG_HARVESTER})"
+  fi
+
+  # --- Downstream cluster nodes ---
+  for label in "Rancher Manager:${KUBECONFIG_RANCHER}" \
+               "Observability:${KUBECONFIG_OBS}" \
+               "Apps:${KUBECONFIG_APPS}"; do
+    local name kc
+    name="${label%%:*}"
+    kc="${label##*:}"
+    echo ""
+    echo "[ ${name} cluster nodes ]"
+    if [[ -f "${kc}" ]]; then
+      kubectl --kubeconfig="${kc}" get nodes \
+        --request-timeout=10s 2>/dev/null \
+        || echo "  (cluster API unreachable)"
+    else
+      echo "  (kubeconfig not found: ${kc})"
+    fi
+  done
+
+  echo ""
+  echo "========================================================"
+}
+
+# ---------------------------------------------------------------------------
+# Entrypoint
+# ---------------------------------------------------------------------------
+case "${1:-}" in
+  shutdown) do_shutdown ;;
+  startup)  do_startup ;;
+  status)   do_status ;;
+  *)
+    echo "Usage: $(basename "$0") {shutdown|startup|status}"
+    echo ""
+    echo "  shutdown  Stop all VMs, then power off Harvester nodes and infra VMs"
+    echo "  startup   Start infra VMs, wake Harvester nodes, bring up all clusters"
+    echo "  status    Show current state of infra VMs, Harvester nodes, and all clusters"
+    echo ""
+    echo "Set ENVIRONMENT before running to target a specific lab (default: community)."
+    echo "  ENVIRONMENT=carbide ./labctl status"
+    exit 1
+    ;;
+esac

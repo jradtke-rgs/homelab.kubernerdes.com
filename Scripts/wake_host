@@ -1,20 +1,46 @@
 #!/usr/bin/env python3
 """
 Wake-on-LAN script for NUC nodes.
-Usage: ./wake_host <hostname|all>
+
+Usage: ./wake_host <hostname|all|list>
+
+The active host table is selected by the ENVIRONMENT env var
+(community | carbide | enclave).  Defaults to 'community'.
 """
 
+import os
 import socket
 import sys
 import time
 
-# Hostname to MAC address lookup table
-HOSTS = {
-    "nuc-01": "48:21:0b:65:ce:e5",
-    "nuc-02": "48:21:0b:65:c2:c7",
-    "nuc-03": "48:21:0b:5d:7a:e6",
-    # Add more hosts as needed
+# Per-environment hostname → MAC tables.
+# community  → Gen13 NUCs (nuc-11/12/13)
+# carbide    → Gen10 NUCs (nuc-01/02/03) via RGS registry
+# enclave    → Gen10 NUCs (nuc-01/02/03) air-gapped via Harbor
+HOSTS_BY_ENV = {
+    "community": {
+        "nuc-11": "48:21:0b:65:ce:e5",
+        "nuc-12": "48:21:0b:65:c2:c7",
+        "nuc-13": "48:21:0b:5d:7a:e6",
+    },
+    "carbide": {
+        "nuc-01": "88:ae:dd:0b:90:70",
+        "nuc-02": "1c:69:7a:ab:23:50",
+        "nuc-03": "88:ae:dd:0b:af:9c",
+    },
+    "enclave": {
+        "nuc-01": "88:ae:dd:0b:90:70",
+        "nuc-02": "1c:69:7a:ab:23:50",
+        "nuc-03": "88:ae:dd:0b:af:9c",
+    },
 }
+
+_env = os.environ.get("ENVIRONMENT", "community")
+if _env not in HOSTS_BY_ENV:
+    print(f"Warning: unknown ENVIRONMENT '{_env}', defaulting to 'community'")
+    _env = "community"
+
+HOSTS = HOSTS_BY_ENV[_env]
 
 BROADCAST_IP = "255.255.255.255"
 WOL_PORT = 9
@@ -48,7 +74,7 @@ def send_wol(mac_address: str, hostname: str = None) -> None:
 def wake_host(hostname: str) -> None:
     """Wake a specific host by hostname."""
     if hostname not in HOSTS:
-        print(f"Error: Unknown host '{hostname}'")
+        print(f"Error: Unknown host '{hostname}' for environment '{_env}'")
         print(f"Available hosts: {', '.join(sorted(HOSTS.keys()))}")
         sys.exit(1)
 
@@ -58,7 +84,7 @@ def wake_host(hostname: str) -> None:
 def wake_all() -> None:
     """Wake all hosts in the lookup table."""
     hosts = sorted(HOSTS.items())
-    print(f"Waking {len(hosts)} host(s)...")
+    print(f"Waking {len(hosts)} host(s) for environment '{_env}'...")
     for i, (hostname, mac) in enumerate(hosts):
         send_wol(mac, hostname)
         if i < len(hosts) - 1:
@@ -68,7 +94,7 @@ def wake_all() -> None:
 
 def list_hosts() -> None:
     """List all available hosts."""
-    print("Available hosts:")
+    print(f"Available hosts (ENVIRONMENT={_env}):")
     for hostname, mac in sorted(HOSTS.items()):
         print(f"  {hostname}: {mac}")
 
@@ -80,6 +106,7 @@ def main() -> None:
         print("  <hostname>  Wake a specific host")
         print("  all         Wake all hosts")
         print("  list        List available hosts")
+        print("\nSet ENVIRONMENT to select the host table (community|carbide|enclave).")
         sys.exit(1)
 
     target = sys.argv[1].lower()

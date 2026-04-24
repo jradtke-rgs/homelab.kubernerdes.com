@@ -148,6 +148,7 @@ unset _ENCLAVE_PFX _COMMUNITY_PFX
 # ---------------------------------------------------------------------------
 # Kubeconfig paths (stored on nuc-00)
 # ---------------------------------------------------------------------------
+export KUBECONFIG_HARVESTER="${HOME}/.kube/${ENVIRONMENT}-harvester.kubeconfig"
 export KUBECONFIG_RANCHER="${HOME}/.kube/${ENVIRONMENT}-rancher.kubeconfig"
 export KUBECONFIG_OBS="${HOME}/.kube/${ENVIRONMENT}-observability.kubeconfig"
 export KUBECONFIG_APPS="${HOME}/.kube/${ENVIRONMENT}-apps.kubeconfig"

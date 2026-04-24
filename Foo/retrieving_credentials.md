@@ -71,3 +71,16 @@ helm upgrade stackstate stackstate/stackstate \
   --reuse-values \
   --set stackstate.adminPassword=<new_password>
 ```
+
+## Generic 
+ 
+Dump ALL the "secrets"
+```
+for ns in $(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'); do
+  echo "=== Namespace: $ns ==="
+  kubectl get secrets -n $ns -o name | while read secret; do
+    echo "  Secret: $secret"
+    kubectl get $secret -n $ns -o go-template='{{range $k,$v := .data}}  {{$k}}: {{$v|base64decode}}{{"\n"}}{{end}}' 2>/dev/null
+  done
+done
+```
