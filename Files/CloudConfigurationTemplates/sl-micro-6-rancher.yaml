@@ -1,6 +1,6 @@
 #cloud-config
 ---
-# SL-Micro 6.1 Cloud-Init Configuration - Combined (User Data + Network Data)
+# SL-Micro 6.x Cloud-Init Configuration - Combined (User Data + Network Data)
 # Note: SL-Micro is an immutable OS, so some configurations require
 #   special handling
 
@@ -36,16 +36,21 @@ runcmd:
     # --- Configuration ---
     GATEWAY="10.10.12.1"
     DNS_SERVERS="10.10.12.8 10.10.12.9 8.8.8.8"
-    DNS_DOMAIN="carbide.kubernerdes.com"
     LOG_FILE="/var/log/static-ip-setup.log"
 
     # --- Hostname-to-IP Map ---
     HOSTNAME=$(cat /etc/hostname 2>/dev/null || hostname)
 
     case "$HOSTNAME" in
-      rancher-01)         IPADDR="10.10.12.211/22" ;;
-      rancher-02)         IPADDR="10.10.12.212/22" ;;
-      rancher-03)         IPADDR="10.10.12.213/22" ;;
+      rancher-01)         IPADDR="10.10.12.211/22"; DNS_DOMAIN="carbide.kubernerdes.com" ;;
+      rancher-02)         IPADDR="10.10.12.212/22"; DNS_DOMAIN="carbide.kubernerdes.com" ;;
+      rancher-03)         IPADDR="10.10.12.213/22"; DNS_DOMAIN="carbide.kubernerdes.com" ;;
+      rancher-11)         IPADDR="10.10.13.211/22"; DNS_DOMAIN="enclave.kubernerdes.com" ;;
+      rancher-12)         IPADDR="10.10.13.212/22"; DNS_DOMAIN="enclave.kubernerdes.com" ;;
+      rancher-13)         IPADDR="10.10.13.213/22"; DNS_DOMAIN="enclave.kubernerdes.com" ;;
+      rancher-21)         IPADDR="10.10.14.211/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
+      rancher-22)         IPADDR="10.10.14.212/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
+      rancher-23)         IPADDR="10.10.14.213/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
       *)
         echo "$(date): Unknown hostname '$HOSTNAME' - skipping static IP" | tee -a "$LOG_FILE"
         exit 0
