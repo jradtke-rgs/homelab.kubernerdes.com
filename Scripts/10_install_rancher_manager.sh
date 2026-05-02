@@ -55,17 +55,25 @@ kubectl -n cert-manager rollout status deploy/cert-manager --timeout=120s
 # Rancher Manager
 # ---------------------------------------------------------------------------
 echo "==> Adding Rancher helm repo (${RANCHER_CHART_REPO})..."
-helm repo add rancher-latest "${RANCHER_CHART_REPO}" 2>/dev/null || true
+RANCHER_REPO_ALIAS="${RANCHER_CHART_NAME%%/*}"
+helm repo add "${RANCHER_REPO_ALIAS}" "${RANCHER_CHART_REPO}" 2>/dev/null || true
 helm repo update
 
 echo "==> Installing Rancher ${RANCHER_VERSION}..."
+RANCHER_EXTRA_ARGS=()
+if [[ "${ENVIRONMENT}" =~ ^(carbide|enclave)$ ]]; then
+  # Use the RGS registry as the default for all Rancher-deployed images
+  RANCHER_EXTRA_ARGS+=(--set "systemDefaultRegistry=${RGS_REGISTRY}")
+fi
+
 helm upgrade --install rancher "${RANCHER_CHART_NAME}" \
   --version "${RANCHER_VERSION}" \
   --namespace cattle-system \
   --create-namespace \
   --set hostname="${RANCHER_HOSTNAME}" \
   --set replicas=3 \
-  --set bootstrapPassword=ChangeMe-RancherBootstrap
+  --set bootstrapPassword=ChangeMe-RancherBootstrap \
+  "${RANCHER_EXTRA_ARGS[@]}"
 
 kubectl -n cattle-system rollout status deploy/rancher --timeout=300s
 

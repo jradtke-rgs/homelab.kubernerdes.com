@@ -33,9 +33,9 @@ DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
 case "${ENVIRONMENT}" in
-  enclave)   IP_PREFIX="10.10.12"; RKE2_INSTALL_URL="http://${IP_PREFIX}.10/rke2/install.sh" ;;
-  carbide)   IP_PREFIX="10.10.13"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh" ;;
-  community) IP_PREFIX="10.10.14"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh" ;;
+  enclave)   IP_PREFIX="10.10.12"; RKE2_INSTALL_URL="http://${IP_PREFIX}.10/rke2/install.sh"; RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
+  carbide)   IP_PREFIX="10.10.13"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh";   RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
+  community) IP_PREFIX="10.10.14"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh";   RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
   *)
     echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'"
     exit 1
@@ -49,7 +49,7 @@ case $(uname -n) in
   rancher-0*)
     cat <<EOF | tee /root/.rke2.vars
 export MY_CLUSTER=rancher
-export MY_RKE2_VERSION=v1.34.4+rke2r1
+export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
 export MY_RKE2_TOKEN=ChangeMe-RancherRKE2
 export MY_RKE2_VIP=${IP_PREFIX}.210
 export MY_RKE2_HOSTNAME=rancher.${BASE_DOMAIN}
@@ -58,7 +58,7 @@ EOF
   observability-0*)
     cat <<EOF | tee /root/.rke2.vars
 export MY_CLUSTER=observability
-export MY_RKE2_VERSION=v1.34.4+rke2r1
+export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
 export MY_RKE2_TOKEN=ChangeMe-ObsRKE2
 export MY_RKE2_VIP=${IP_PREFIX}.220
 export MY_RKE2_HOSTNAME=observability.${BASE_DOMAIN}
@@ -67,7 +67,7 @@ EOF
   apps-0*)
     cat <<EOF | tee /root/.rke2.vars
 export MY_CLUSTER=apps
-export MY_RKE2_VERSION=v1.34.4+rke2r1
+export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
 export MY_RKE2_TOKEN=ChangeMe-AppsRKE2
 export MY_RKE2_VIP=${IP_PREFIX}.230
 export MY_RKE2_HOSTNAME=apps.${BASE_DOMAIN}
