@@ -4,9 +4,9 @@
 # Sourced automatically by env.sh when ENVIRONMENT=carbide.
 # Do not source directly.
 #
-# Carbide = RGS software pulled from registry.rancher.com over the internet.
-# Requires a valid RGS Carbide subscription and registry credentials.
-# Run modules/carbide/registry_auth.sh before the main deployment sequence.
+# Carbide = RGS software pulled from the RGS registry over the internet.
+# Requires a valid RGS Carbide subscription and registry credentials stored in
+# ~/.config/RGS.creds (RGS_USERNAME and RGS_TOKEN).
 
 # ---------------------------------------------------------------------------
 # Hardware — Gen10 NUCs (nuc-01 / nuc-02 / nuc-03), 10.10.13.0/24
@@ -22,6 +22,7 @@ export NUC03_MAC="88:ae:dd:0b:af:9c"
 # ---------------------------------------------------------------------------
 # Software versions (RGS government-hardened builds)
 # ---------------------------------------------------------------------------
+export SL_MICRO_VERSION="6.1"
 export HARVESTER_VERSION="v1.7.1-amd64-govt.1"
 export RKE2_VERSION="v1.34.4+rke2r2"
 export RANCHER_VERSION="2.13.3"
@@ -31,11 +32,19 @@ export NEUVECTOR_VERSION="5.4.9"
 
 # ---------------------------------------------------------------------------
 # Registry — RGS Carbide registry
+# Credentials (CARBIDE_USERNAME, CARBIDE_PASSWORD) must be in ~/.config/RGS.creds
 # ---------------------------------------------------------------------------
-export RGS_REGISTRY="registry.rancher.com"
+export RGS_REGISTRY="registry.ranchercarbide.dev"
 export REGISTRY_MIRROR="${RGS_REGISTRY}"
-# RGS_TOKEN must be set externally (e.g. export RGS_TOKEN=<your-token>)
-# or via modules/carbide/registry_auth.sh before deployment
+
+RGS_CREDS_FILE="${HOME}/.config/RGS.creds"
+if [[ -f "${RGS_CREDS_FILE}" ]]; then
+  # shellcheck source=/dev/null
+  source "${RGS_CREDS_FILE}"
+else
+  echo "WARNING: ${RGS_CREDS_FILE} not found — RGS registry auth will fail" >&2
+fi
+unset RGS_CREDS_FILE
 
 # ---------------------------------------------------------------------------
 # Chart and image sources
