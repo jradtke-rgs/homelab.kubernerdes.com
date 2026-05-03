@@ -10,12 +10,29 @@ Physical hardware, bill of materials, and network switch layout.
 | nuc-01 | Harvester node 1 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-02 | Harvester node 2 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-03 | Harvester node 3 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
-| nuc-11 | Harvester node 1 | enclave | TBD | TBD | — | — | — | — |
-| nuc-12 | Harvester node 2 | enclave | TBD | TBD | — | — | — | — |
-| nuc-13 | Harvester node 3 | enclave | TBD | TBD | — | — | — | — |
+| nuc-11 | Harvester node 1 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
+| nuc-12 | Harvester node 2 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
+| nuc-13 | Harvester node 3 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
 | nuc-21 | Harvester node 1 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
 | nuc-22 | Harvester node 2 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
 | nuc-23 | Harvester node 3 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
+
+## Power Consumption (Estimated)
+
+nuc-11/12/13 are full ATX desktop systems; all other nodes are NUC form factor. Values are whole-system estimates (PSU losses not included).
+
+| System | CPU | Idle (W) | Average (W) | Max (W) |
+|:-------|:----|:--------:|:-----------:|:-------:|
+| nuc-00 | i3-1315U | 6 | 20 | 54 |
+| nuc-01 | i7-10710U | 7 | 28 | 65 |
+| nuc-02 | i7-10710U | 7 | 28 | 65 |
+| nuc-03 | i7-10710U | 7 | 28 | 65 |
+| nuc-11 | i9-285K | 65 | 175 | 320 |
+| nuc-12 | i9-285K | 65 | 175 | 320 |
+| nuc-13 | i9-285K | 65 | 175 | 320 |
+| nuc-21 | i7-1360P | 10 | 35 | 64 |
+| nuc-22 | i7-1360P | 10 | 35 | 64 |
+| nuc-23 | i7-1360P | 10 | 35 | 64 |
 
 Node naming convention: **carbide=0x, enclave=1x, community=2x** — applies to NUCs and all cluster node roles (rancher-Xx, observability-Xx, apps-Xx).
 
