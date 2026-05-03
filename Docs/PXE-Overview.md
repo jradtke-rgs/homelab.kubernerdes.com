@@ -5,7 +5,7 @@ How network boot works in this environment, from power-on to Harvester install.
 ## Boot Flow
 
 ```
-Power on (nuc-01/02/03)
+Power on (nuc-X1/X2/X3 — X=0 carbide, 1 enclave, 2 community)
   └─► UEFI firmware → PXE boot via NIC
         └─► DHCP request to nuc-00-01 (${IP_PREFIX}.8)
               └─► DHCP returns:
@@ -20,7 +20,7 @@ Power on (nuc-01/02/03)
                                                             └─► User selects node role
                                                                   └─► Kernel + initrd + squashfs fetched via HTTP
                                                                         └─► Harvester installer boots
-                                                                              └─► Reads config-{create,join}-nuc-0x.yaml
+                                                                              └─► Reads config-{create,join}-nuc-Xx.yaml
                                                                                     └─► Automated install runs
 ```
 

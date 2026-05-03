@@ -9,7 +9,7 @@
 # ~/.config/RGS.creds (RGS_USERNAME and RGS_TOKEN).
 
 # ---------------------------------------------------------------------------
-# Hardware — Gen10 NUCs (nuc-01 / nuc-02 / nuc-03), 10.10.13.0/24
+# Hardware — Gen10 NUCs (nuc-01 / nuc-02 / nuc-03), 10.10.12.0/24
 # ---------------------------------------------------------------------------
 export NIC_NAME="eno1"
 export NUC01_HOST="nuc-01"

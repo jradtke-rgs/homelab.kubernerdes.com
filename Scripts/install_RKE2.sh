@@ -33,8 +33,8 @@ DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
 case "${ENVIRONMENT}" in
-  enclave)   IP_PREFIX="10.10.12"; RKE2_INSTALL_URL="http://${IP_PREFIX}.10/rke2/install.sh"; RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
-  carbide)   IP_PREFIX="10.10.13"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh";   RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
+  carbide)   IP_PREFIX="10.10.12"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh";   RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
+  enclave)   IP_PREFIX="10.10.13"; RKE2_INSTALL_URL="http://${IP_PREFIX}.10/rke2/install.sh"; RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
   community) IP_PREFIX="10.10.14"; RKE2_INSTALL_URL="https://get.rke2.io/install-rke2.sh";   RKE2_VERSION_DEFAULT="v1.34.7+rke2r1" ;;
   *)
     echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'"
@@ -45,8 +45,15 @@ esac
 # ---------------------------------------------------------------------------
 # Cluster-specific variables (set based on hostname)
 # ---------------------------------------------------------------------------
+# Node digit prefix: carbide=0, enclave=1, community=2
+case "${ENVIRONMENT}" in
+  carbide)   _NODE_DIG="0" ;;
+  enclave)   _NODE_DIG="1" ;;
+  community) _NODE_DIG="2" ;;
+esac
+
 case $(uname -n) in
-  rancher-0*)
+  rancher-*)
     cat <<EOF | tee /root/.rke2.vars
 export MY_CLUSTER=rancher
 export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
@@ -55,7 +62,7 @@ export MY_RKE2_VIP=${IP_PREFIX}.210
 export MY_RKE2_HOSTNAME=rancher.${BASE_DOMAIN}
 EOF
   ;;
-  observability-0*)
+  observability-*)
     cat <<EOF | tee /root/.rke2.vars
 export MY_CLUSTER=observability
 export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
@@ -64,7 +71,7 @@ export MY_RKE2_VIP=${IP_PREFIX}.220
 export MY_RKE2_HOSTNAME=observability.${BASE_DOMAIN}
 EOF
   ;;
-  apps-0*)
+  apps-*)
     cat <<EOF | tee /root/.rke2.vars
 export MY_CLUSTER=apps
 export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
@@ -88,9 +95,9 @@ sed -i -e "/${MY_CLUSTER}/d" /etc/hosts
 case ${MY_CLUSTER} in
   rancher)
     cat <<EOF >> /etc/hosts
-${IP_PREFIX}.211    rancher-01.${BASE_DOMAIN} rancher-01
-${IP_PREFIX}.212    rancher-02.${BASE_DOMAIN} rancher-02
-${IP_PREFIX}.213    rancher-03.${BASE_DOMAIN} rancher-03
+${IP_PREFIX}.211    rancher-${_NODE_DIG}1.${BASE_DOMAIN} rancher-${_NODE_DIG}1
+${IP_PREFIX}.212    rancher-${_NODE_DIG}2.${BASE_DOMAIN} rancher-${_NODE_DIG}2
+${IP_PREFIX}.213    rancher-${_NODE_DIG}3.${BASE_DOMAIN} rancher-${_NODE_DIG}3
 EOF
   ;;
 esac

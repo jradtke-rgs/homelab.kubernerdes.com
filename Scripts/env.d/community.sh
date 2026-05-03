@@ -8,12 +8,12 @@
 # No registry mirror, no credentials required.
 
 # ---------------------------------------------------------------------------
-# Hardware — Gen13 NUCs (nuc-11 / nuc-12 / nuc-13), 10.10.14.0/24
+# Hardware — Gen13 NUCs (nuc-21 / nuc-22 / nuc-23), 10.10.14.0/24
 # ---------------------------------------------------------------------------
 export NIC_NAME="enp86s0"
-export NUC01_HOST="nuc-11"
-export NUC02_HOST="nuc-12"
-export NUC03_HOST="nuc-13"
+export NUC01_HOST="nuc-21"
+export NUC02_HOST="nuc-22"
+export NUC03_HOST="nuc-23"
 export NUC01_MAC="48:21:0b:65:ce:e5"
 export NUC02_MAC="48:21:0b:65:c2:c7"
 export NUC03_MAC="48:21:0b:5d:7a:e6"

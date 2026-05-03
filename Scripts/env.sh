@@ -15,14 +15,15 @@
 # See install_RKE2.sh and nuc-00-*/post_install.sh for that pattern.
 #
 # ENVIRONMENTS — all share the 10.10.12.0/22 supernet; each occupies one /24:
-#   enclave    — 10.10.12.0/24 — Gen10 NUCs — RGS via Hauler + Harbor (air-gap)
-#   carbide    — 10.10.13.0/24 — Gen10 NUCs — RGS software from RGS registry
-#   community  — 10.10.14.0/24 — Gen13 NUCs — SUSE/upstream bits, public registries
+#   carbide    — 10.10.12.0/24 — nuc-01/02/03 — RGS software from RGS registry
+#   enclave    — 10.10.13.0/24 — nuc-11/12/13 — RGS via Hauler + Harbor (air-gap)
+#   community  — 10.10.14.0/24 — nuc-21/22/23 — SUSE/upstream bits, public registries
 #   (reserved) — 10.10.15.0/24 — DHCP dynamic pool
 #
 # NUC01_HOST / NUC02_HOST / NUC03_HOST are set per environment in env.d/:
-#   enclave/carbide: nuc-01 / nuc-02 / nuc-03  (Gen10 NUCs)
-#   community:       nuc-11 / nuc-12 / nuc-13  (Gen13 NUCs)
+#   carbide:   nuc-01 / nuc-02 / nuc-03
+#   enclave:   nuc-11 / nuc-12 / nuc-13
+#   community: nuc-21 / nuc-22 / nuc-23
 
 export ENVIRONMENT="${ENVIRONMENT:-community}"
 export DOMAIN="kubernerdes.com"
@@ -34,8 +35,8 @@ export BASE_DOMAIN="${ENVIRONMENT}.${DOMAIN}"
 
 # Per-environment /24 prefix — all within the 10.10.12.0/22 supernet
 case "${ENVIRONMENT}" in
-  enclave)   export IP_PREFIX="10.10.12" ;;
-  carbide)   export IP_PREFIX="10.10.13" ;;
+  carbide)   export IP_PREFIX="10.10.12" ;;
+  enclave)   export IP_PREFIX="10.10.13" ;;
   community) export IP_PREFIX="10.10.14" ;;
   *) echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2; return 1 ;;
 esac
@@ -106,12 +107,28 @@ export APPS_NODE_02="${IP_PREFIX}.232"
 export APPS_NODE_03="${IP_PREFIX}.233"
 
 # ---------------------------------------------------------------------------
-# Shared HAProxy variables — nuc-00-03 serves both enclave and community
+# Shared HAProxy variables — nuc-00-03 serves carbide, enclave, and community
 # from a single haproxy.cfg; these vars are used by the haproxy template
 # regardless of which ENVIRONMENT context env.sh is sourced in.
 # ---------------------------------------------------------------------------
-_ENCLAVE_PFX="10.10.12"
+_CARBIDE_PFX="10.10.12"
+_ENCLAVE_PFX="10.10.13"
 _COMMUNITY_PFX="10.10.14"
+
+export CARBIDE_RANCHER_VIP="${_CARBIDE_PFX}.210"
+export CARBIDE_RANCHER_NODE_01="${_CARBIDE_PFX}.211"
+export CARBIDE_RANCHER_NODE_02="${_CARBIDE_PFX}.212"
+export CARBIDE_RANCHER_NODE_03="${_CARBIDE_PFX}.213"
+
+export CARBIDE_OBS_VIP="${_CARBIDE_PFX}.220"
+export CARBIDE_OBS_NODE_01="${_CARBIDE_PFX}.221"
+export CARBIDE_OBS_NODE_02="${_CARBIDE_PFX}.222"
+export CARBIDE_OBS_NODE_03="${_CARBIDE_PFX}.223"
+
+export CARBIDE_APPS_VIP="${_CARBIDE_PFX}.230"
+export CARBIDE_APPS_NODE_01="${_CARBIDE_PFX}.231"
+export CARBIDE_APPS_NODE_02="${_CARBIDE_PFX}.232"
+export CARBIDE_APPS_NODE_03="${_CARBIDE_PFX}.233"
 
 export ENCLAVE_RANCHER_VIP="${_ENCLAVE_PFX}.210"
 export ENCLAVE_RANCHER_NODE_01="${_ENCLAVE_PFX}.211"
@@ -119,14 +136,14 @@ export ENCLAVE_RANCHER_NODE_02="${_ENCLAVE_PFX}.212"
 export ENCLAVE_RANCHER_NODE_03="${_ENCLAVE_PFX}.213"
 
 export ENCLAVE_OBS_VIP="${_ENCLAVE_PFX}.220"
-export ENCLAVE_OBS_NODE_01="10.10.15.37"
-export ENCLAVE_OBS_NODE_02="10.10.15.38"
-export ENCLAVE_OBS_NODE_03="10.10.15.39"
+export ENCLAVE_OBS_NODE_01="${_ENCLAVE_PFX}.221"
+export ENCLAVE_OBS_NODE_02="${_ENCLAVE_PFX}.222"
+export ENCLAVE_OBS_NODE_03="${_ENCLAVE_PFX}.223"
 
 export ENCLAVE_APPS_VIP="${_ENCLAVE_PFX}.230"
-export ENCLAVE_APPS_NODE_01="10.10.15.106"
-export ENCLAVE_APPS_NODE_02="10.10.15.107"
-export ENCLAVE_APPS_NODE_03="10.10.15.108"
+export ENCLAVE_APPS_NODE_01="${_ENCLAVE_PFX}.231"
+export ENCLAVE_APPS_NODE_02="${_ENCLAVE_PFX}.232"
+export ENCLAVE_APPS_NODE_03="${_ENCLAVE_PFX}.233"
 
 export COMMUNITY_RANCHER_VIP="${_COMMUNITY_PFX}.210"
 export COMMUNITY_RANCHER_NODE_01="${_COMMUNITY_PFX}.211"
@@ -134,16 +151,16 @@ export COMMUNITY_RANCHER_NODE_02="${_COMMUNITY_PFX}.212"
 export COMMUNITY_RANCHER_NODE_03="${_COMMUNITY_PFX}.213"
 
 export COMMUNITY_OBS_VIP="${_COMMUNITY_PFX}.220"
-export COMMUNITY_OBS_NODE_01="10.10.15.119"
-export COMMUNITY_OBS_NODE_02="10.10.15.120"
-export COMMUNITY_OBS_NODE_03="10.10.15.121"
+export COMMUNITY_OBS_NODE_01="${_COMMUNITY_PFX}.221"
+export COMMUNITY_OBS_NODE_02="${_COMMUNITY_PFX}.222"
+export COMMUNITY_OBS_NODE_03="${_COMMUNITY_PFX}.223"
 
 export COMMUNITY_APPS_VIP="${_COMMUNITY_PFX}.230"
 export COMMUNITY_APPS_NODE_01="${_COMMUNITY_PFX}.231"
 export COMMUNITY_APPS_NODE_02="${_COMMUNITY_PFX}.232"
 export COMMUNITY_APPS_NODE_03="${_COMMUNITY_PFX}.233"
 
-unset _ENCLAVE_PFX _COMMUNITY_PFX
+unset _CARBIDE_PFX _ENCLAVE_PFX _COMMUNITY_PFX
 
 # ---------------------------------------------------------------------------
 # Kubeconfig paths (stored on nuc-00)

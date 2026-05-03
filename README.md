@@ -21,15 +21,17 @@ This repository contains the scripts, configuration files, and documentation for
 
 ## Environments
 
-| Environment | Description | CIDR | Domain |
-|:-----------:|:------------|:----:|:-------|
-| **Community** | SUSE/upstream bits pulled from public registries | 10.0.0.0/22 | community.kubernerdes.com |
-| **Carbide** | RGS software pulled from the RGS registry over the internet | 10.10.12.0/22 | carbide.kubernerdes.com |
-| **Enclave** | RGS software synced via Hauler, served from a local Harbor registry (air-gapped) | 10.10.12.0/22 | enclave.kubernerdes.com |
+| Environment | Description | Subnet | Domain | Nodes |
+|:-----------:|:------------|:------:|:-------|:------|
+| **Carbide** | RGS software pulled from the RGS registry over the internet | 10.10.12.0/24 | carbide.kubernerdes.com | nuc-01/02/03 |
+| **Enclave** | RGS software synced via Hauler, served from a local Harbor registry (air-gapped) | 10.10.13.0/24 | enclave.kubernerdes.com | nuc-11/12/13 |
+| **Community** | SUSE/upstream bits pulled from public registries | 10.10.14.0/24 | community.kubernerdes.com | nuc-21/22/23 |
 
-Carbide and Enclave share the same CIDR — they are never deployed simultaneously. They represent different software delivery approaches on the same physical hardware.
+All three environments share the `10.10.12.0/22` supernet and have dedicated hardware — they can run simultaneously.
 
-**Milestones:** Community MVP → Carbide → Enclave
+Node naming follows a digit-prefix convention: carbide=0x, enclave=1x, community=2x (e.g. rancher-01/02/03, rancher-11/12/13, rancher-21/22/23).
+
+**Milestones:** Carbide MVP → Enclave → Community
 
 ---
 
@@ -112,15 +114,15 @@ All IPs are derived from `${IP_PREFIX}` defined in `env.sh`.
 | .10 | nuc-00 | Admin host (Apache + KVM + libvirt) |
 | .93 | nuc-00-03 | HAProxy load balancer + Keepalived VIP |
 | .100 | harvester | Harvester cluster VIP |
-| .101 | nuc-01 | Harvester node 1 |
-| .102 | nuc-02 | Harvester node 2 |
-| .103 | nuc-03 | Harvester node 3 |
+| .101 | nuc-X1 | Harvester node 1 (X=0 carbide, 1 enclave, 2 community) |
+| .102 | nuc-X2 | Harvester node 2 |
+| .103 | nuc-X3 | Harvester node 3 |
 | .210 | rancher | Rancher Manager cluster VIP |
-| .211-.213 | rancher-01/02/03 | Rancher Manager nodes |
+| .211-.213 | rancher-X1/X2/X3 | Rancher Manager nodes |
 | .220 | observability | Observability cluster VIP |
-| .221-.223 | observability-01/02/03 | Observability nodes |
+| .221-.223 | observability-X1/X2/X3 | Observability nodes |
 | .230 | apps | Applications cluster VIP |
-| .231-.233 | apps-01/02/03 | Applications cluster nodes |
+| .231-.233 | apps-X1/X2/X3 | Applications cluster nodes |
 
 Wildcard DNS: `*.apps.${ENVIRONMENT}.kubernerdes.com` → `${IP_PREFIX}.230`
 
