@@ -21,18 +21,49 @@ Physical hardware, bill of materials, and network switch layout.
 
 nuc-11/12/13 are full ATX desktop systems; all other nodes are NUC form factor. Values are whole-system estimates (PSU losses not included).
 
+**Admin**
+
 | System | CPU | Idle (W) | Average (W) | Max (W) |
 |:-------|:----|:--------:|:-----------:|:-------:|
 | nuc-00 | i3-1315U | 6 | 20 | 54 |
+| **Total** | | **6** | **20** | **54** |
+
+**carbide**
+
+| System | CPU | Idle (W) | Average (W) | Max (W) |
+|:-------|:----|:--------:|:-----------:|:-------:|
 | nuc-01 | i7-10710U | 7 | 28 | 65 |
 | nuc-02 | i7-10710U | 7 | 28 | 65 |
 | nuc-03 | i7-10710U | 7 | 28 | 65 |
+| **Total** | | **21** | **84** | **195** |
+
+**enclave**
+
+| System | CPU | Idle (W) | Average (W) | Max (W) |
+|:-------|:----|:--------:|:-----------:|:-------:|
 | nuc-11 | i9-285K | 65 | 175 | 320 |
 | nuc-12 | i9-285K | 65 | 175 | 320 |
 | nuc-13 | i9-285K | 65 | 175 | 320 |
+| **Total** | | **195** | **525** | **960** |
+
+**community**
+
+| System | CPU | Idle (W) | Average (W) | Max (W) |
+|:-------|:----|:--------:|:-----------:|:-------:|
 | nuc-21 | i7-1360P | 10 | 35 | 64 |
 | nuc-22 | i7-1360P | 10 | 35 | 64 |
 | nuc-23 | i7-1360P | 10 | 35 | 64 |
+| **Total** | | **30** | **105** | **192** |
+
+**Overall Summary**
+
+| Environment | Idle (W) | Average (W) | Max (W) |
+|:------------|:--------:|:-----------:|:-------:|
+| Admin | 6 | 20 | 54 |
+| carbide | 21 | 84 | 195 |
+| enclave | 195 | 525 | 960 |
+| community | 30 | 105 | 192 |
+| **Grand Total** | **252** | **734** | **1,401** |
 
 Node naming convention: **carbide=0x, enclave=1x, community=2x** — applies to NUCs and all cluster node roles (rancher-Xx, observability-Xx, apps-Xx).
 
