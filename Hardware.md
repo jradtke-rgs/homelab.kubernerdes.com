@@ -57,13 +57,15 @@ nuc-11/12/13 are full ATX desktop systems; all other nodes are NUC form factor. 
 
 **Overall Summary**
 
-| Environment | Idle (W) | Average (W) | Max (W) |
-|:------------|:--------:|:-----------:|:-------:|
-| Admin | 6 | 20 | 54 |
-| carbide | 21 | 84 | 195 |
-| enclave | 195 | 525 | 960 |
-| community | 30 | 105 | 192 |
-| **Grand Total** | **252** | **734** | **1,401** |
+Rate: $0.14/kWh — monthly cost = Watts × 730 hr × $0.14 / 1000
+
+| Environment | Idle (W) | Idle $/mo | Average (W) | Avg $/mo | Max (W) | Max $/mo |
+|:------------|:--------:|:---------:|:-----------:|:--------:|:-------:|:--------:|
+| Admin | 6 | $0.61 | 20 | $2.04 | 54 | $5.52 |
+| carbide | 21 | $2.15 | 84 | $8.58 | 195 | $19.93 |
+| enclave | 195 | $19.93 | 525 | $53.66 | 960 | $98.11 |
+| community | 30 | $3.07 | 105 | $10.73 | 192 | $19.62 |
+| **Grand Total** | **252** | **$25.75** | **734** | **$75.01** | **1,401** | **$143.18** |
 
 Node naming convention: **carbide=0x, enclave=1x, community=2x** — applies to NUCs and all cluster node roles (rancher-Xx, observability-Xx, apps-Xx).
 
