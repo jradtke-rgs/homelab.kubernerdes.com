@@ -7,9 +7,12 @@ Physical hardware, bill of materials, and network switch layout.
 | System | Purpose | Environment | Model | CPU | Cores | RAM (GB) | Disk0 (SSD GB) | Disk1 (NVMe GB) |
 |:-------|:--------|:------------|:------|:----|------:|:--------:|---------------:|----------------:|
 | nuc-00 | Admin Host | (all) | NUC13ANHi3 | i3-1315U | 6 | 32 | — | 512 |
+| nas | NAS / NFS storage | (all) | ASUS X99-PRO/USB 3.1 | Xeon E5-2630 v3 | 8 | 94 | 1000 | — |
 | nuc-01 | Harvester node 1 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-02 | Harvester node 2 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-03 | Harvester node 3 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
+¹ nas storage: 1 × 1TB SSD (OS), 3 × 4TB HDD (NAS pool, TrueNAS Scale); NFS share TBD
+
 | nuc-11 | Harvester node 1 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
 | nuc-12 | Harvester node 2 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
 | nuc-13 | Harvester node 3 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
@@ -26,7 +29,8 @@ nuc-11/12/13 are full ATX desktop systems; all other nodes are NUC form factor. 
 | System | CPU | Idle (W) | Average (W) | Max (W) |
 |:-------|:----|:--------:|:-----------:|:-------:|
 | nuc-00 | i3-1315U | 6 | 20 | 54 |
-| **Total** | | **6** | **20** | **54** |
+| nas | Xeon E5-2630 v3 | 80 | 120 | 200 |
+| **Total** | | **86** | **140** | **254** |
 
 **carbide**
 
@@ -61,11 +65,11 @@ Rate: $0.14/kWh — monthly cost = Watts × 730 hr × $0.14 / 1000
 
 | Environment | Idle (W) | Idle $/mo | Average (W) | Avg $/mo | Max (W) | Max $/mo |
 |:------------|:--------:|:---------:|:-----------:|:--------:|:-------:|:--------:|
-| Admin | 6 | $0.61 | 20 | $2.04 | 54 | $5.52 |
+| Admin | 86 | $8.79 | 140 | $14.30 | 254 | $25.96 |
 | carbide | 21 | $2.15 | 84 | $8.58 | 195 | $19.93 |
 | enclave | 195 | $19.93 | 525 | $53.66 | 960 | $98.11 |
 | community | 30 | $3.07 | 105 | $10.73 | 192 | $19.62 |
-| **Grand Total** | **252** | **$25.75** | **734** | **$75.01** | **1,401** | **$143.18** |
+| **Grand Total** | **332** | **$33.93** | **854** | **$87.27** | **1,601** | **$163.62** |
 
 Node naming convention: **carbide=0x, enclave=1x, community=2x** — applies to NUCs and all cluster node roles (rancher-Xx, observability-Xx, apps-Xx).
 
@@ -90,6 +94,7 @@ Infrastructure IPs (shared / always present on 10.10.12.x):
 | 10.10.12.8 | nuc-00-01 | DNS primary + DHCP + TFTP (infra VM on nuc-00) |
 | 10.10.12.9 | nuc-00-02 | DNS secondary (infra VM on nuc-00) |
 | 10.10.12.10 | nuc-00 | Admin host (Apache + KVM) |
+| 10.10.12.11 | nas | NAS / NFS storage (TrueNAS Scale) |
 | 10.10.12.12 | librenms | Network monitoring (VM, optional) |
 | 10.10.12.93 | nuc-00-03 | HAProxy load balancer (infra VM on nuc-00) |
 | 10.10.12.193 | nuc-00-03-vip | HAProxy Keepalived VIP |
