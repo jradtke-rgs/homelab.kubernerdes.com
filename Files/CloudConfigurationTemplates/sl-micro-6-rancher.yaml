@@ -4,10 +4,6 @@
 # Note: SL-Micro is an immutable OS, so some configurations require
 #   special handling
 
-package_update: true
-packages:
-  - qemu-guest-agent
-
 # Create user accounts with their configuration
 users:
   - name: sles
@@ -28,6 +24,9 @@ users:
 
 # Commands to run after the system is configured
 runcmd:
+  # Install qemu-guest-agent via transactional-update (required for immutable SL-Micro)
+  - transactional-update --non-interactive pkg install qemu-guest-agent
+
   # Configure static IP via NetworkManager based on hostname
   - |
     #!/bin/bash
@@ -39,7 +38,7 @@ runcmd:
     LOG_FILE="/var/log/static-ip-setup.log"
 
     # --- Hostname-to-IP Map ---
-    HOSTNAME=$(cat /etc/hostname 2>/dev/null || hostname)
+    HOSTNAME=$(hostname -s 2>/dev/null || cat /etc/hostname | cut -d. -f1)
 
     case "$HOSTNAME" in
       rancher-01)         IPADDR="10.10.12.211/22"; DNS_DOMAIN="carbide.kubernerdes.com" ;;
@@ -71,9 +70,7 @@ runcmd:
 
     # Disable cloud-init network config to prevent conflicts on reboot
     mkdir -p /etc/cloud/cloud.cfg.d
-    cat > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg <<INNEREOF
-    network: {config: disabled}
-    INNEREOF
+    echo 'network: {config: disabled}' > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
 
     # Parse CIDR
     IP_ONLY=${IPADDR%/*}
@@ -100,23 +97,6 @@ runcmd:
     ip addr show "$IFACE" | tee -a "$LOG_FILE"
     echo "========================================" | tee -a "$LOG_FILE"
 
-  # Enable and start the QEMU guest agent service immediately
-  - - systemctl
-    - enable
-    - --now
-    - qemu-guest-agent.service
-
-# Configure NTP (Network Time Protocol) for time synchronization
-# SL-Micro uses systemd-timesyncd by default
-ntp:
-  # Enable NTP service
-  enabled: true
-  # List of NTP servers to synchronize time with
-  servers:
-    - 0.pool.suse.ntp.org
-    - 1.pool.suse.ntp.org
-    - 2.pool.suse.ntp.org
-
 # Create or modify files on the system
 write_files:
   # Create sudoers configuration file for sles user
@@ -137,3 +117,11 @@ write_files:
       FallbackNTP=time.cloudflare.com
     owner: root:root
     permissions: '0644'
+
+# Reboot to activate the transactional-update snapshot (installs qemu-guest-agent)
+# The RPM %post scriptlet enables the service via systemd presets during install
+power_state:
+  mode: reboot
+  message: "Rebooting to activate transactional-update snapshot"
+  timeout: 30
+  condition: true
