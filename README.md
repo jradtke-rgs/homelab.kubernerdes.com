@@ -8,6 +8,9 @@ This repository contains the scripts, configuration files, and documentation for
 
 **Associated Documentation Site:** [docs.homelab.kubernerdes.com](https://jradtke-rgs.github.io/docs.homelab.kubernerdes.com/)
 
+![Images/Software_Lifecycle_Path_Gemini.png](cImages/Software_Lifecycle_Path_Gemini.png)
+
+
 ---
 
 ## Goals
