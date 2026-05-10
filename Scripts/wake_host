@@ -34,6 +34,11 @@ HOSTS_BY_ENV = {
         "nuc-22": "48:21:0b:65:c2:c7",
         "nuc-23": "48:21:0b:5d:7a:e6",
     },
+    "forager": {
+        "nuc-01": "88:ae:dd:0b:90:70",
+        "nuc-02": "1c:69:7a:ab:23:50",
+        "nuc-03": "88:ae:dd:0b:af:9c",
+    },
 }
 
 _env = os.environ.get("ENVIRONMENT", "community")
