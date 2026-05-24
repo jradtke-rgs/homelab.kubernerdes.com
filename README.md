@@ -43,22 +43,30 @@ Node naming follows a digit-prefix convention: carbide=0x, enclave=1x, community
 ```
 .
 ├── Scripts/
-│   ├── env.sh               # Master config — sets ENVIRONMENT, sources env.d/
+│   ├── env.sh                    # Master config — sets ENVIRONMENT, sources env.d/
 │   ├── env.d/
-│   │   ├── community.sh     # Community-specific vars (public registry sources)
-│   │   ├── carbide.sh       # Carbide-specific vars (RGS registry, token)
-│   │   └── enclave.sh       # Enclave-specific vars (Harbor URL, Hauler paths)
+│   │   ├── community.sh          # Community-specific vars (public registry sources)
+│   │   ├── carbide.sh            # Carbide-specific vars (RGS registry, token)
+│   │   └── enclave.sh            # Enclave-specific vars (Harbor URL, Hauler paths)
 │   │
-│   ├── 00_preflight.sh      # Verify prerequisites before deployment
-│   ├── 02_setup_ca.sh       # Generate root CA
+│   ├── 00_preflight.sh           # Verify prerequisites before deployment
+│   ├── 02_setup_vault.sh         # Install HashiCorp Vault; initialize PKI engine as homelab root CA
+│   ├── 03_distribute_ca.sh       # Push root CA to all Harvester + RKE2 nodes (retroactive)
 │   ├── 07_post_configure_harvester.sh
 │   ├── 10_install_rancher_manager.sh
 │   ├── 20_install_security.sh
 │   ├── 21_install_observability.sh
 │   ├── 30_deploy_apps.sh
-│   ├── 80_compare_images.sh # Community vs Carbide image comparison (NeuVector)
+│   ├── 80_compare_images.sh      # Community vs Carbide image comparison (NeuVector)
 │   │
-│   └── modules/             # Environment-specific scripts, invoked only when needed
+│   ├── install_RKE2.sh           # Install RKE2 on a cluster node; run on each node as root
+│   ├── install_RKE2_postboot.sh  # Post-reboot kubeconfig setup (SL-Micro path)
+│   │
+│   ├── nuc-00/                   # Admin host bootstrap scripts
+│   ├── nuc-00-01/                # DNS + DHCP infra VM scripts
+│   ├── nuc-00-03/                # HAProxy infra VM scripts
+│   │
+│   └── modules/                  # Environment-specific scripts, invoked only when needed
 │       ├── carbide/
 │       │   └── registry_auth.sh
 │       └── enclave/
@@ -152,18 +160,21 @@ For Carbide and Enclave: RGS Carbide portal access — request a license from th
 4. *(Enclave only)* Run `modules/enclave/harbor_setup.sh` — stand up local registry
 5. *(Carbide only)* Run `modules/carbide/registry_auth.sh` — configure registry credentials
 6. Build the **Harvester Cluster** (`nuc-01`, `nuc-02`, `nuc-03`) via PXE or USB
-7. Run `02_setup_ca.sh` — generate root CA
-8. Run `07_post_configure_harvester.sh` — CA trust, cloud images, registry mirror
+7. Run `02_setup_vault.sh` — install Vault on `nuc-00`, initialize PKI engine as the homelab root CA, publish cert via Apache
+8. Run `07_post_configure_harvester.sh` — cloud images, cloud-init templates, rancher-monitoring add-on
+9. Run `install_RKE2.sh` on each cluster node — fetches and trusts the root CA automatically before installing RKE2
 
 ---
 
 ## Day 2 — Operate
 
-1. Run `10_install_rancher_manager.sh` — deploy RKE2 + Rancher Manager Server
+1. Run `10_install_rancher_manager.sh` — deploy cert-manager + Rancher Manager; creates a `vault-homelab` cert-manager ClusterIssuer backed by Vault PKI
 2. Run `20_install_security.sh` — deploy NeuVector on the applications cluster
 3. Run `21_install_observability.sh` — deploy SUSE Observability stack
 4. Run `30_deploy_apps.sh` — deploy sample workloads
 5. Run `80_compare_images.sh` — compare community vs Carbide images side-by-side in NeuVector
+
+> **Retroactive CA distribution:** If you add nodes or need to push the root CA to existing nodes, run `03_distribute_ca.sh` from `nuc-00` at any time.
 
 ---
 
@@ -173,3 +184,5 @@ For Carbide and Enclave: RGS Carbide portal access — request a license from th
 - [Rancher Manager — Helm CLI Quick Start](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli)
 - [RGS Carbide Portal](https://portal.ranchercarbide.dev/product/)
 - [Hauler Documentation](https://docs.hauler.dev/docs/intro)
+- [HashiCorp Vault PKI Secrets Engine](https://developer.hashicorp.com/vault/docs/secrets/pki)
+- [cert-manager Vault Issuer](https://cert-manager.io/docs/configuration/vault/)
