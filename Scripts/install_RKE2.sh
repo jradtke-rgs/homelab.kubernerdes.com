@@ -42,6 +42,8 @@ case "${ENVIRONMENT}" in
   ;;
 esac
 
+ADMIN_IP="${IP_PREFIX}.10"
+
 # ---------------------------------------------------------------------------
 # Cluster-specific variables (set based on hostname)
 # ---------------------------------------------------------------------------
@@ -87,6 +89,28 @@ EOF
 esac
 
 source /root/.rke2.vars
+
+# ---------------------------------------------------------------------------
+# Trust the homelab root CA — fetched from the admin node via HTTP.
+# Must happen before RKE2 installs so containerd inherits the trust store.
+# Published by 02_setup_vault.sh; distributed retroactively by 03_distribute_ca.sh.
+# ---------------------------------------------------------------------------
+CA_URL="http://${ADMIN_IP}/homelab-root-ca.crt"
+CA_DEST="/etc/pki/trust/anchors/homelab-root-ca.crt"
+
+if [[ ! -f "${CA_DEST}" ]]; then
+  echo "==> Fetching homelab root CA from ${CA_URL}"
+  if curl -fsSL --connect-timeout 10 -o "${CA_DEST}" "${CA_URL}"; then
+    update-ca-certificates
+    echo "    Root CA trusted."
+  else
+    echo "    WARNING: Could not fetch CA from ${CA_URL} — continuing without it."
+    echo "             Run Scripts/03_distribute_ca.sh from nuc-00 after this node is up."
+    rm -f "${CA_DEST}"
+  fi
+else
+  echo "==> Homelab root CA already trusted."
+fi
 
 # ---------------------------------------------------------------------------
 # /etc/hosts — static entries so nodes can find each other without DNS

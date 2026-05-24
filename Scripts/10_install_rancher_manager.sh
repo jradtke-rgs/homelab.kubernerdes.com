@@ -52,6 +52,62 @@ helm upgrade --install cert-manager "${CERT_MANAGER_SOURCE}" \
 kubectl -n cert-manager rollout status deploy/cert-manager --timeout=120s
 
 # ---------------------------------------------------------------------------
+# Vault ClusterIssuer for cert-manager
+#
+# Creates a dedicated Vault policy + long-lived token so cert-manager can
+# request certificates from Vault's PKI engine without using the root token.
+# Token TTL is 10 years — rotate when rebuilding Vault.
+# Requires: 02_setup_vault.sh completed on nuc-00; vault CLI in PATH.
+# ---------------------------------------------------------------------------
+VAULT_ADDR="${VAULT_ADDR:-http://${ADMIN_IP}:8200}"
+VAULT_INIT_FILE="${VAULT_INIT_FILE:-/root/vault-init.json}"
+
+if command -v vault >/dev/null 2>&1 && [[ -f "${VAULT_INIT_FILE}" ]]; then
+  echo "==> Configuring cert-manager Vault ClusterIssuer"
+  export VAULT_ADDR
+  export VAULT_TOKEN
+  VAULT_TOKEN=$(jq -r '.root_token' "${VAULT_INIT_FILE}")
+
+  vault policy write cert-manager - << 'POLICY'
+path "pki/sign/homelab-server" { capabilities = ["update"] }
+path "pki/sign/homelab-client" { capabilities = ["update"] }
+POLICY
+
+  CERTMGR_TOKEN=$(vault token create \
+    -policy=cert-manager \
+    -ttl=87600h \
+    -renewable=false \
+    -display-name="cert-manager-${ENVIRONMENT}" \
+    -format=json | jq -r '.auth.client_token')
+
+  kubectl create secret generic cert-manager-vault-token \
+    --namespace cert-manager \
+    --from-literal=token="${CERTMGR_TOKEN}" \
+    --dry-run=client -o yaml | kubectl apply -f -
+
+  kubectl apply -f - << EOF
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: vault-homelab
+spec:
+  vault:
+    server: ${VAULT_ADDR}
+    path: pki/sign/homelab-server
+    auth:
+      tokenSecretRef:
+        name: cert-manager-vault-token
+        key: token
+EOF
+
+  echo "    ClusterIssuer 'vault-homelab' ready."
+  echo "    Token expires in 10 years — rotate with 10_install_rancher_manager.sh when rebuilding Vault."
+else
+  echo "    INFO: Vault not found or ${VAULT_INIT_FILE} missing — skipping ClusterIssuer."
+  echo "         Run 02_setup_vault.sh on nuc-00, then re-run this script."
+fi
+
+# ---------------------------------------------------------------------------
 # Rancher Manager
 # ---------------------------------------------------------------------------
 echo "==> Adding Rancher helm repo (${RANCHER_CHART_REPO})..."
