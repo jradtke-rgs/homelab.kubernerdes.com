@@ -26,7 +26,7 @@ This repository contains the scripts, configuration files, and documentation for
 
 | Environment | Description | Subnet | Domain | Nodes |
 |:-----------:|:------------|:------:|:-------|:------|
-| **Homelab** | Common infrastructure utilized by any of the other Environments | 10.10.12.0/24 | carbide.kubernerdes.com | nuc-01/02/03 |
+| **Homelab** | Common infrastructure utilized by any of the other Environments | 10.10.12.0/24 | homelab.kubernerdes.com | nuc-00, nuc-00-01/02/03 |
 | **Enclave** | RGS software synced via Hauler, served from a local Harbor registry (air-gapped) | 10.10.13.0/24 | enclave.kubernerdes.com | nuc-01/02/03 |
 | **Community** | SUSE/upstream bits pulled from public registries | 10.10.14.0/24 | community.kubernerdes.com | nuc-01/02/03 |
 | **Carbide** | RGS software pulled from the RGS registry over the internet | 10.10.15.0/24 | carbide.kubernerdes.com | nuc-01/02/03 |
