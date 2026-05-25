@@ -15,10 +15,11 @@
 # See install_RKE2.sh and nuc-00-*/post_install.sh for that pattern.
 #
 # ENVIRONMENTS — all share the 10.10.12.0/22 supernet; each occupies one /24:
-#   carbide    — 10.10.12.0/24 — nuc-01/02/03 — RGS software from RGS registry
+#   homelab    — 10.10.12.0/24 — shared infrastructure (DNS, DHCP, admin, NAS)
 #   enclave    — 10.10.13.0/24 — nuc-01/02/03 — RGS via Hauler + Harbor (air-gap)
 #   community  — 10.10.14.0/24 — nuc-01/02/03 — SUSE/upstream bits, public registries
-#   (reserved) — 10.10.15.0/24 — DHCP dynamic pool
+#   carbide    — 10.10.15.0/24 — nuc-01/02/03 — RGS software from RGS registry
+# Each /24 reserves .228-.254 as a dynamic DHCP pool for ad-hoc clients.
 #
 # NUC01_HOST / NUC02_HOST / NUC03_HOST are set per environment in env.d/.
 # All environments use nuc-01 / nuc-02 / nuc-03; distinguished by ENVIRONMENT/domain.
@@ -33,22 +34,21 @@ export BASE_DOMAIN="${ENVIRONMENT}.${DOMAIN}"
 
 # Per-environment /24 prefix — all within the 10.10.12.0/22 supernet
 case "${ENVIRONMENT}" in
-  carbide)   export IP_PREFIX="10.10.12" ;;
+  carbide)   export IP_PREFIX="10.10.15" ;;
   enclave)   export IP_PREFIX="10.10.13" ;;
   community) export IP_PREFIX="10.10.14" ;;
   *) echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2; return 1 ;;
 esac
 
-# Supernet constants (fixed — shared by all environments and the DHCP pool)
+# Supernet constants (fixed — shared by all environments)
 export SUPERNET_PREFIX="10.10.12"
 export SUBNET_CIDR="${SUPERNET_PREFIX}.0/22"
 export SUBNET_MASK="255.255.252.0"
 export GATEWAY="${SUPERNET_PREFIX}.1"
 
-# DHCP dynamic pool — last /24 of the /22, reserved across all environments
-export DHCP_POOL_PREFIX="10.10.15"
-export DHCP_RANGE_START="${DHCP_POOL_PREFIX}.1"
-export DHCP_RANGE_END="${DHCP_POOL_PREFIX}.254"
+# DHCP dynamic pool — each environment reserves .228-.254 in its own /24
+export DHCP_RANGE_START="${IP_PREFIX}.228"
+export DHCP_RANGE_END="${IP_PREFIX}.254"
 
 # ---------------------------------------------------------------------------
 # Infrastructure hosts
@@ -109,7 +109,7 @@ export APPS_NODE_03="${IP_PREFIX}.233"
 # from a single haproxy.cfg; these vars are used by the haproxy template
 # regardless of which ENVIRONMENT context env.sh is sourced in.
 # ---------------------------------------------------------------------------
-_CARBIDE_PFX="10.10.12"
+_CARBIDE_PFX="10.10.15"
 _ENCLAVE_PFX="10.10.13"
 _COMMUNITY_PFX="10.10.14"
 

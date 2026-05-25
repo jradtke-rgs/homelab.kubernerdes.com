@@ -77,16 +77,16 @@ All three environments have dedicated hardware and can run simultaneously.
 
 ## IP Assignments
 
-The supernet is `10.10.12.0/22`. Each environment occupies one `/24`; the last `/24` is the DHCP pool.
+The supernet is `10.10.12.0/22`. Each environment occupies one `/24`; each reserves `.228-.254` as a dynamic DHCP pool.
 
-| Subnet | Environment | Nodes |
+| Subnet | Environment | Notes |
 |:-------|:------------|:------|
-| 10.10.12.0/24 | carbide | nuc-01/02/03 |
-| 10.10.13.0/24 | enclave | nuc-01/02/03 |
-| 10.10.14.0/24 | community | nuc-01/02/03 |
-| 10.10.15.0/24 | (reserved) | DHCP dynamic pool |
+| 10.10.12.0/24 | homelab | Shared infrastructure (DNS, DHCP, admin, NAS) |
+| 10.10.13.0/24 | enclave | nuc-01/02/03 Harvester cluster |
+| 10.10.14.0/24 | community | nuc-01/02/03 Harvester cluster |
+| 10.10.15.0/24 | carbide | nuc-01/02/03 Harvester cluster |
 
-Infrastructure IPs (shared / always present on 10.10.12.x):
+Infrastructure IPs — homelab (10.10.12.x), shared across all environments:
 
 | IP | Hostname | Purpose |
 |:---|:---------|:--------|
@@ -101,19 +101,20 @@ Infrastructure IPs (shared / always present on 10.10.12.x):
 
 Per-environment IPs (last octet identical across all environments, prefix differs):
 
-| Last Octet | carbide (10.10.12.x) | enclave (10.10.13.x) | community (10.10.14.x) | Purpose |
-|:----------:|:---------------------|:---------------------|:-----------------------|:--------|
+| Last Octet | enclave (10.10.13.x) | community (10.10.14.x) | carbide (10.10.15.x) | Purpose |
+|:----------:|:---------------------|:-----------------------|:---------------------|:--------|
 | .101 | nuc-01 | nuc-01 | nuc-01 | Harvester node 1 |
 | .102 | nuc-02 | nuc-02 | nuc-02 | Harvester node 2 |
 | .103 | nuc-03 | nuc-03 | nuc-03 | Harvester node 3 |
 | .111-.113 | nuc-0x-kvm | nuc-0x-kvm | nuc-0x-kvm | KVM / IPMI interfaces |
 | .210 | rancher-VIP | rancher-VIP | rancher-VIP | Rancher Manager cluster VIP |
-| .211-.213 | rancher-01/02/03 | rancher-11/12/13 | rancher-21/22/23 | Rancher Manager nodes |
+| .211-.213 | rancher-11/12/13 | rancher-21/22/23 | rancher-01/02/03 | Rancher Manager nodes |
 | .220 | observability-VIP | observability-VIP | observability-VIP | Observability cluster VIP |
-| .221-.223 | observability-01/02/03 | observability-11/12/13 | observability-21/22/23 | Observability nodes |
+| .221-.223 | observability-11/12/13 | observability-21/22/23 | observability-01/02/03 | Observability nodes |
 | .230 | apps-VIP | apps-VIP | apps-VIP | Applications cluster VIP |
-| .231-.233 | apps-01/02/03 | apps-11/12/13 | apps-21/22/23 | Applications cluster nodes |
-| .251 | spark-e | — | — | Optional hardware |
+| .231-.233 | apps-11/12/13 | apps-21/22/23 | apps-01/02/03 | Applications cluster nodes |
+| .251 | — | — | spark-e | Optional hardware |
+| .228-.254 | dynamic pool | dynamic pool | dynamic pool | DHCP dynamic range |
 
 Wildcard DNS: `*.apps.${ENVIRONMENT}.kubernerdes.com` → `${IP_PREFIX}.230`
 
