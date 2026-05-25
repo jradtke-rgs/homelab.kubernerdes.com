@@ -13,15 +13,15 @@
 #   3. Continue with normal numbered scripts (00_ through 80_)
 
 # ---------------------------------------------------------------------------
-# Hardware — nuc-11 / nuc-12 / nuc-13, 10.10.13.0/24
+# Hardware — nuc-01 / nuc-02 / nuc-03, 10.10.13.0/24
 # ---------------------------------------------------------------------------
 export NIC_NAME="eno1"
-export NUC01_HOST="nuc-11"
-export NUC02_HOST="nuc-12"
-export NUC03_HOST="nuc-13"
-export NUC01_MAC="TODO:enclave-nuc-11-mac"
-export NUC02_MAC="TODO:enclave-nuc-12-mac"
-export NUC03_MAC="TODO:enclave-nuc-13-mac"
+export NUC01_HOST="nuc-01"
+export NUC02_HOST="nuc-02"
+export NUC03_HOST="nuc-03"
+export NUC01_MAC="TODO:enclave-nuc-01-mac"
+export NUC02_MAC="TODO:enclave-nuc-02-mac"
+export NUC03_MAC="TODO:enclave-nuc-03-mac"
 
 # ---------------------------------------------------------------------------
 # Software versions (RGS government-hardened builds)

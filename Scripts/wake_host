@@ -15,8 +15,8 @@ import time
 
 # Per-environment hostname → MAC tables.
 # carbide    → nuc-01/02/03 (Gen10 NUCs, 10.10.12.0/24) via RGS registry
-# enclave    → nuc-11/12/13 (10.10.13.0/24) air-gapped via Harbor
-# community  → nuc-21/22/23 (Gen13 NUCs, 10.10.14.0/24) public registries
+# enclave    → nuc-01/02/03 (10.10.13.0/24) air-gapped via Harbor
+# community  → nuc-01/02/03 (Gen13 NUCs, 10.10.14.0/24) public registries
 HOSTS_BY_ENV = {
     "carbide": {
         "nuc-01": "88:ae:dd:0b:90:70",
@@ -24,20 +24,20 @@ HOSTS_BY_ENV = {
         "nuc-03": "88:ae:dd:0b:af:9c",
     },
     "enclave": {
-        # TODO: fill in MAC addresses once enclave nuc-11/12/13 hardware is provisioned
-        "nuc-11": "TODO:enclave-nuc-11-mac",
-        "nuc-12": "TODO:enclave-nuc-12-mac",
-        "nuc-13": "TODO:enclave-nuc-13-mac",
+        # TODO: fill in MAC addresses once enclave hardware is provisioned
+        "nuc-01": "TODO:enclave-nuc-01-mac",
+        "nuc-02": "TODO:enclave-nuc-02-mac",
+        "nuc-03": "TODO:enclave-nuc-03-mac",
     },
     "community": {
-        "nuc-21": "48:21:0b:65:ce:e5",
-        "nuc-22": "48:21:0b:65:c2:c7",
-        "nuc-23": "48:21:0b:5d:7a:e6",
+        "nuc-01": "48:21:0b:65:ce:e5",
+        "nuc-02": "48:21:0b:65:c2:c7",
+        "nuc-03": "48:21:0b:5d:7a:e6",
     },
     "forager": {
-        "nuc-21": "88:ae:dd:0b:90:70",
-        "nuc-22": "1c:69:7a:ab:23:50",
-        "nuc-23": "88:ae:dd:0b:af:9c",
+        "nuc-01": "88:ae:dd:0b:90:70",
+        "nuc-02": "1c:69:7a:ab:23:50",
+        "nuc-03": "88:ae:dd:0b:af:9c",
     },
 }
 

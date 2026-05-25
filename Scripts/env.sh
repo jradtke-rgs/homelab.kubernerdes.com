@@ -16,14 +16,12 @@
 #
 # ENVIRONMENTS — all share the 10.10.12.0/22 supernet; each occupies one /24:
 #   carbide    — 10.10.12.0/24 — nuc-01/02/03 — RGS software from RGS registry
-#   enclave    — 10.10.13.0/24 — nuc-11/12/13 — RGS via Hauler + Harbor (air-gap)
-#   community  — 10.10.14.0/24 — nuc-21/22/23 — SUSE/upstream bits, public registries
+#   enclave    — 10.10.13.0/24 — nuc-01/02/03 — RGS via Hauler + Harbor (air-gap)
+#   community  — 10.10.14.0/24 — nuc-01/02/03 — SUSE/upstream bits, public registries
 #   (reserved) — 10.10.15.0/24 — DHCP dynamic pool
 #
-# NUC01_HOST / NUC02_HOST / NUC03_HOST are set per environment in env.d/:
-#   carbide:   nuc-01 / nuc-02 / nuc-03
-#   enclave:   nuc-11 / nuc-12 / nuc-13
-#   community: nuc-21 / nuc-22 / nuc-23
+# NUC01_HOST / NUC02_HOST / NUC03_HOST are set per environment in env.d/.
+# All environments use nuc-01 / nuc-02 / nuc-03; distinguished by ENVIRONMENT/domain.
 
 export ENVIRONMENT="${ENVIRONMENT:-community}"
 export DOMAIN="kubernerdes.com"

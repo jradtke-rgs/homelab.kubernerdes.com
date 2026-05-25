@@ -13,16 +13,16 @@ Physical hardware, bill of materials, and network switch layout.
 | nuc-03 | Harvester node 3 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 ¹ nas storage: 1 × 1TB SSD (OS), 3 × 4TB HDD (NAS pool, TrueNAS Scale); NFS share TBD
 
-| nuc-11 | Harvester node 1 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
-| nuc-12 | Harvester node 2 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
-| nuc-13 | Harvester node 3 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
-| nuc-21 | Harvester node 1 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
-| nuc-22 | Harvester node 2 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
-| nuc-23 | Harvester node 3 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
+| nuc-01 | Harvester node 1 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
+| nuc-02 | Harvester node 2 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
+| nuc-03 | Harvester node 3 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
+| nuc-01 | Harvester node 1 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
+| nuc-02 | Harvester node 2 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
+| nuc-03 | Harvester node 3 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
 
 ## Power Consumption (Estimated)
 
-nuc-11/12/13 are full ATX desktop systems; all other nodes are NUC form factor. Values are whole-system estimates (PSU losses not included).
+enclave nuc-01/02/03 are full ATX desktop systems; all other nodes are NUC form factor. Values are whole-system estimates (PSU losses not included).
 
 **Admin**
 
@@ -45,18 +45,18 @@ nuc-11/12/13 are full ATX desktop systems; all other nodes are NUC form factor. 
 
 | System | CPU | Idle (W) | Average (W) | Max (W) |
 |:-------|:----|:--------:|:-----------:|:-------:|
-| nuc-11 | i9-285K | 65 | 175 | 320 |
-| nuc-12 | i9-285K | 65 | 175 | 320 |
-| nuc-13 | i9-285K | 65 | 175 | 320 |
+| nuc-01 | i9-285K | 65 | 175 | 320 |
+| nuc-02 | i9-285K | 65 | 175 | 320 |
+| nuc-03 | i9-285K | 65 | 175 | 320 |
 | **Total** | | **195** | **525** | **960** |
 
 **community**
 
 | System | CPU | Idle (W) | Average (W) | Max (W) |
 |:-------|:----|:--------:|:-----------:|:-------:|
-| nuc-21 | i7-1360P | 10 | 35 | 64 |
-| nuc-22 | i7-1360P | 10 | 35 | 64 |
-| nuc-23 | i7-1360P | 10 | 35 | 64 |
+| nuc-01 | i7-1360P | 10 | 35 | 64 |
+| nuc-02 | i7-1360P | 10 | 35 | 64 |
+| nuc-03 | i7-1360P | 10 | 35 | 64 |
 | **Total** | | **30** | **105** | **192** |
 
 **Overall Summary**
@@ -71,7 +71,7 @@ Rate: $0.14/kWh — monthly cost = Watts × 730 hr × $0.14 / 1000
 | community | 30 | $3.07 | 105 | $10.73 | 192 | $19.62 |
 | **Grand Total** | **332** | **$33.93** | **854** | **$87.27** | **1,601** | **$163.62** |
 
-Node naming convention: **carbide=0x, enclave=1x, community=2x** — applies to NUCs and all cluster node roles (rancher-Xx, observability-Xx, apps-Xx).
+Node naming convention: NUC nodes use **nuc-01/02/03** for all environments (distinguished by ENVIRONMENT/domain). Other cluster roles (rancher, observability, apps) follow a digit-prefix scheme: carbide=0x, enclave=1x, community=2x (e.g. rancher-01/02/03, rancher-11/12/13, rancher-21/22/23).
 
 All three environments have dedicated hardware and can run simultaneously.
 
@@ -82,8 +82,8 @@ The supernet is `10.10.12.0/22`. Each environment occupies one `/24`; the last `
 | Subnet | Environment | Nodes |
 |:-------|:------------|:------|
 | 10.10.12.0/24 | carbide | nuc-01/02/03 |
-| 10.10.13.0/24 | enclave | nuc-11/12/13 |
-| 10.10.14.0/24 | community | nuc-21/22/23 |
+| 10.10.13.0/24 | enclave | nuc-01/02/03 |
+| 10.10.14.0/24 | community | nuc-01/02/03 |
 | 10.10.15.0/24 | (reserved) | DHCP dynamic pool |
 
 Infrastructure IPs (shared / always present on 10.10.12.x):
@@ -103,10 +103,10 @@ Per-environment IPs (last octet identical across all environments, prefix differ
 
 | Last Octet | carbide (10.10.12.x) | enclave (10.10.13.x) | community (10.10.14.x) | Purpose |
 |:----------:|:---------------------|:---------------------|:-----------------------|:--------|
-| .101 | nuc-01 | nuc-11 | nuc-21 | Harvester node 1 |
-| .102 | nuc-02 | nuc-12 | nuc-22 | Harvester node 2 |
-| .103 | nuc-03 | nuc-13 | nuc-23 | Harvester node 3 |
-| .111-.113 | nuc-0x-kvm | nuc-1x-kvm | nuc-2x-kvm | KVM / IPMI interfaces |
+| .101 | nuc-01 | nuc-01 | nuc-01 | Harvester node 1 |
+| .102 | nuc-02 | nuc-02 | nuc-02 | Harvester node 2 |
+| .103 | nuc-03 | nuc-03 | nuc-03 | Harvester node 3 |
+| .111-.113 | nuc-0x-kvm | nuc-0x-kvm | nuc-0x-kvm | KVM / IPMI interfaces |
 | .210 | rancher-VIP | rancher-VIP | rancher-VIP | Rancher Manager cluster VIP |
 | .211-.213 | rancher-01/02/03 | rancher-11/12/13 | rancher-21/22/23 | Rancher Manager nodes |
 | .220 | observability-VIP | observability-VIP | observability-VIP | Observability cluster VIP |
@@ -139,9 +139,9 @@ Wildcard DNS: `*.apps.${ENVIRONMENT}.kubernerdes.com` → `${IP_PREFIX}.230`
 |:----:|:-----|:------|:----:|:-----|:------|
 | 1 | nuc-00 | Admin host | 9 | nuc-02-kvm | KVM secondary NIC |
 | 2 | nuc-01 | carbide Harvester node 1 | 10 | nuc-03-kvm | KVM secondary NIC |
-| 3 | nuc-02 | carbide Harvester node 2 | 11 | nuc-21 | community Harvester node 1 |
-| 4 | nuc-03 | carbide Harvester node 3 | 12 | nuc-22 | community Harvester node 2 |
-| 5 | nuc-01-vms | VM traffic NIC | 13 | nuc-23 | community Harvester node 3 |
+| 3 | nuc-02 | carbide Harvester node 2 | 11 | nuc-01 | community Harvester node 1 |
+| 4 | nuc-03 | carbide Harvester node 3 | 12 | nuc-02 | community Harvester node 2 |
+| 5 | nuc-01-vms | VM traffic NIC | 13 | nuc-03 | community Harvester node 3 |
 | 6 | nuc-02-vms | VM traffic NIC | 14 | | |
 | 7 | nuc-03-vms | VM traffic NIC | 15 | spark-e | Optional |
 | 8 | nuc-01-kvm | KVM secondary NIC | 16 | uplink | Internet |
@@ -155,9 +155,9 @@ MAC addresses are set per environment in `Scripts/env.d/${ENVIRONMENT}.sh`.
 | nuc-01 | 88:ae:dd:0b:90:70 | carbide (Gen10) |
 | nuc-02 | 1c:69:7a:ab:23:50 | carbide (Gen10) |
 | nuc-03 | 88:ae:dd:0b:af:9c | carbide (Gen10) |
-| nuc-11 | TBD | enclave |
-| nuc-12 | TBD | enclave |
-| nuc-13 | TBD | enclave |
-| nuc-21 | 48:21:0b:65:ce:e5 | community (Gen13, formerly nuc-11) |
-| nuc-22 | 48:21:0b:65:c2:c7 | community (Gen13, formerly nuc-12) |
-| nuc-23 | 48:21:0b:5d:7a:e6 | community (Gen13, formerly nuc-13) |
+| nuc-01 | TBD | enclave |
+| nuc-02 | TBD | enclave |
+| nuc-03 | TBD | enclave |
+| nuc-01 | 48:21:0b:65:ce:e5 | community (Gen13) |
+| nuc-02 | 48:21:0b:65:c2:c7 | community (Gen13) |
+| nuc-03 | 48:21:0b:5d:7a:e6 | community (Gen13) |
