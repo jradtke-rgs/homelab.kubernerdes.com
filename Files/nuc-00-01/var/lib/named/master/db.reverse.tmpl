@@ -29,22 +29,19 @@ ${IP_PREFIX##*.}.${IP_PREFIX%.*}.in-addr.arpa.  IN SOA  nuc-00-01.${BASE_DOMAIN}
 193 IN  PTR nuc-00-03-vip.${BASE_DOMAIN}.
 
 ; ── Rancher Manager cluster ──────────────────────────────────────────────────
-210 IN  PTR rancher.${BASE_DOMAIN}.
-211 IN  PTR rancher-01.${BASE_DOMAIN}.
-212 IN  PTR rancher-02.${BASE_DOMAIN}.
-213 IN  PTR rancher-03.${BASE_DOMAIN}.
+30  IN  PTR rancher.${BASE_DOMAIN}.
+31  IN  PTR rancher-01.${BASE_DOMAIN}.
+32  IN  PTR rancher-02.${BASE_DOMAIN}.
+33  IN  PTR rancher-03.${BASE_DOMAIN}.
 
 ; ── Observability cluster ────────────────────────────────────────────────────
-220 IN  PTR observability.${BASE_DOMAIN}.
-221 IN  PTR observability-01.${BASE_DOMAIN}.
-222 IN  PTR observability-02.${BASE_DOMAIN}.
-223 IN  PTR observability-03.${BASE_DOMAIN}.
+40  IN  PTR observability.${BASE_DOMAIN}.
+41  IN  PTR observability-01.${BASE_DOMAIN}.
+42  IN  PTR observability-02.${BASE_DOMAIN}.
+43  IN  PTR observability-03.${BASE_DOMAIN}.
 
 ; ── Applications cluster ─────────────────────────────────────────────────────
-230 IN  PTR apps.${BASE_DOMAIN}.
-231 IN  PTR apps-01.${BASE_DOMAIN}.
-232 IN  PTR apps-02.${BASE_DOMAIN}.
-233 IN  PTR apps-03.${BASE_DOMAIN}.
-
-; ── Other hosts ──────────────────────────────────────────────────────────────
-251 IN  PTR spark-e.${BASE_DOMAIN}.
+50  IN  PTR apps.${BASE_DOMAIN}.
+51  IN  PTR apps-01.${BASE_DOMAIN}.
+52  IN  PTR apps-02.${BASE_DOMAIN}.
+53  IN  PTR apps-03.${BASE_DOMAIN}.

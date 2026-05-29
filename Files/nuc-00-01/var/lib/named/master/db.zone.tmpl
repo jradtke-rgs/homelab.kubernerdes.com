@@ -32,28 +32,25 @@ ${NUC03_HOST}-kvm   IN  A   ${IP_PREFIX}.113
 nuc-00-03-vip   IN  A   ${IP_PREFIX}.193
 
 ; ── Rancher Manager cluster ──────────────────────────────────────────────────
-rancher         IN  A   ${IP_PREFIX}.210
-rancher-01      IN  A   ${IP_PREFIX}.211
-rancher-02      IN  A   ${IP_PREFIX}.212
-rancher-03      IN  A   ${IP_PREFIX}.213
+rancher         IN  A   ${IP_PREFIX}.30
+rancher-01      IN  A   ${IP_PREFIX}.31
+rancher-02      IN  A   ${IP_PREFIX}.32
+rancher-03      IN  A   ${IP_PREFIX}.33
 
 ; ── Observability cluster ────────────────────────────────────────────────────
-observability       IN  A   ${IP_PREFIX}.220
-observability-01    IN  A   ${IP_PREFIX}.221
-observability-02    IN  A   ${IP_PREFIX}.222
-observability-03    IN  A   ${IP_PREFIX}.223
+observability       IN  A   ${IP_PREFIX}.40
+observability-01    IN  A   ${IP_PREFIX}.41
+observability-02    IN  A   ${IP_PREFIX}.42
+observability-03    IN  A   ${IP_PREFIX}.43
 
 ; ── Applications cluster ─────────────────────────────────────────────────────
-apps            IN  A   ${IP_PREFIX}.230
-apps-01         IN  A   ${IP_PREFIX}.231
-apps-02         IN  A   ${IP_PREFIX}.232
-apps-03         IN  A   ${IP_PREFIX}.233
+apps            IN  A   ${IP_PREFIX}.50
+apps-01         IN  A   ${IP_PREFIX}.51
+apps-02         IN  A   ${IP_PREFIX}.52
+apps-03         IN  A   ${IP_PREFIX}.53
 
 ; Wildcard for apps ingress
-*.${APPS_HOSTNAME}. IN  A   ${IP_PREFIX}.230
-
-; ── Other hosts ──────────────────────────────────────────────────────────────
-spark-e         IN  A   ${IP_PREFIX}.251
+*.${APPS_HOSTNAME}. IN  A   ${IP_PREFIX}.50
 
 ; ── DHCP pool sample entries ─────────────────────────────────────────────────
 dhcp-1  IN  A   ${DHCP_POOL_PREFIX}.1

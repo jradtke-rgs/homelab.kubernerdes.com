@@ -19,7 +19,7 @@
 #   enclave    — 10.10.13.0/24 — nuc-01/02/03 — RGS via Hauler + Harbor (air-gap)
 #   community  — 10.10.14.0/24 — nuc-01/02/03 — SUSE/upstream bits, public registries
 #   carbide    — 10.10.15.0/24 — nuc-01/02/03 — RGS software from RGS registry
-# Each /24 reserves .228-.254 as a dynamic DHCP pool for ad-hoc clients.
+# homelab reserves .128-.254 as a dynamic DHCP pool; environment /24s use Harvester DHCP.
 #
 # NUC01_HOST / NUC02_HOST / NUC03_HOST are set per environment in env.d/.
 # All environments use nuc-01 / nuc-02 / nuc-03; distinguished by ENVIRONMENT/domain.
@@ -46,9 +46,9 @@ export SUBNET_CIDR="${SUPERNET_PREFIX}.0/22"
 export SUBNET_MASK="255.255.252.0"
 export GATEWAY="${SUPERNET_PREFIX}.1"
 
-# DHCP dynamic pool — each environment reserves .228-.254 in its own /24
-export DHCP_RANGE_START="${IP_PREFIX}.228"
-export DHCP_RANGE_END="${IP_PREFIX}.254"
+# DHCP dynamic pool — homelab /24 only; environment /24s managed by Harvester
+export DHCP_RANGE_START="${SUPERNET_PREFIX}.128"
+export DHCP_RANGE_END="${SUPERNET_PREFIX}.254"
 
 # ---------------------------------------------------------------------------
 # Infrastructure hosts
@@ -80,29 +80,29 @@ export NUC03_IP="${IP_PREFIX}.103"
 # ---------------------------------------------------------------------------
 # RKE2 cluster — Rancher Manager
 # ---------------------------------------------------------------------------
-export RANCHER_VIP="${IP_PREFIX}.210"
+export RANCHER_VIP="${IP_PREFIX}.30"
 export RANCHER_HOSTNAME="rancher.${BASE_DOMAIN}"
-export RANCHER_NODE_01="${IP_PREFIX}.211"
-export RANCHER_NODE_02="${IP_PREFIX}.212"
-export RANCHER_NODE_03="${IP_PREFIX}.213"
+export RANCHER_NODE_01="${IP_PREFIX}.31"
+export RANCHER_NODE_02="${IP_PREFIX}.32"
+export RANCHER_NODE_03="${IP_PREFIX}.33"
 
 # ---------------------------------------------------------------------------
 # RKE2 cluster — Observability
 # ---------------------------------------------------------------------------
-export OBS_VIP="${IP_PREFIX}.220"
+export OBS_VIP="${IP_PREFIX}.40"
 export OBS_HOSTNAME="observability.${BASE_DOMAIN}"
-export OBS_NODE_01="${IP_PREFIX}.221"
-export OBS_NODE_02="${IP_PREFIX}.222"
-export OBS_NODE_03="${IP_PREFIX}.223"
+export OBS_NODE_01="${IP_PREFIX}.41"
+export OBS_NODE_02="${IP_PREFIX}.42"
+export OBS_NODE_03="${IP_PREFIX}.43"
 
 # ---------------------------------------------------------------------------
 # RKE2 cluster — Applications
 # ---------------------------------------------------------------------------
-export APPS_VIP="${IP_PREFIX}.230"
+export APPS_VIP="${IP_PREFIX}.50"
 export APPS_HOSTNAME="apps.${BASE_DOMAIN}"
-export APPS_NODE_01="${IP_PREFIX}.231"
-export APPS_NODE_02="${IP_PREFIX}.232"
-export APPS_NODE_03="${IP_PREFIX}.233"
+export APPS_NODE_01="${IP_PREFIX}.51"
+export APPS_NODE_02="${IP_PREFIX}.52"
+export APPS_NODE_03="${IP_PREFIX}.53"
 
 # ---------------------------------------------------------------------------
 # Shared HAProxy variables — nuc-00-03 serves carbide, enclave, and community
@@ -113,50 +113,50 @@ _CARBIDE_PFX="10.10.15"
 _ENCLAVE_PFX="10.10.13"
 _COMMUNITY_PFX="10.10.14"
 
-export CARBIDE_RANCHER_VIP="${_CARBIDE_PFX}.210"
-export CARBIDE_RANCHER_NODE_01="${_CARBIDE_PFX}.211"
-export CARBIDE_RANCHER_NODE_02="${_CARBIDE_PFX}.212"
-export CARBIDE_RANCHER_NODE_03="${_CARBIDE_PFX}.213"
+export CARBIDE_RANCHER_VIP="${_CARBIDE_PFX}.30"
+export CARBIDE_RANCHER_NODE_01="${_CARBIDE_PFX}.31"
+export CARBIDE_RANCHER_NODE_02="${_CARBIDE_PFX}.32"
+export CARBIDE_RANCHER_NODE_03="${_CARBIDE_PFX}.33"
 
-export CARBIDE_OBS_VIP="${_CARBIDE_PFX}.220"
-export CARBIDE_OBS_NODE_01="${_CARBIDE_PFX}.221"
-export CARBIDE_OBS_NODE_02="${_CARBIDE_PFX}.222"
-export CARBIDE_OBS_NODE_03="${_CARBIDE_PFX}.223"
+export CARBIDE_OBS_VIP="${_CARBIDE_PFX}.40"
+export CARBIDE_OBS_NODE_01="${_CARBIDE_PFX}.41"
+export CARBIDE_OBS_NODE_02="${_CARBIDE_PFX}.42"
+export CARBIDE_OBS_NODE_03="${_CARBIDE_PFX}.43"
 
-export CARBIDE_APPS_VIP="${_CARBIDE_PFX}.230"
-export CARBIDE_APPS_NODE_01="${_CARBIDE_PFX}.231"
-export CARBIDE_APPS_NODE_02="${_CARBIDE_PFX}.232"
-export CARBIDE_APPS_NODE_03="${_CARBIDE_PFX}.233"
+export CARBIDE_APPS_VIP="${_CARBIDE_PFX}.50"
+export CARBIDE_APPS_NODE_01="${_CARBIDE_PFX}.51"
+export CARBIDE_APPS_NODE_02="${_CARBIDE_PFX}.52"
+export CARBIDE_APPS_NODE_03="${_CARBIDE_PFX}.53"
 
-export ENCLAVE_RANCHER_VIP="${_ENCLAVE_PFX}.210"
-export ENCLAVE_RANCHER_NODE_01="${_ENCLAVE_PFX}.211"
-export ENCLAVE_RANCHER_NODE_02="${_ENCLAVE_PFX}.212"
-export ENCLAVE_RANCHER_NODE_03="${_ENCLAVE_PFX}.213"
+export ENCLAVE_RANCHER_VIP="${_ENCLAVE_PFX}.30"
+export ENCLAVE_RANCHER_NODE_01="${_ENCLAVE_PFX}.31"
+export ENCLAVE_RANCHER_NODE_02="${_ENCLAVE_PFX}.32"
+export ENCLAVE_RANCHER_NODE_03="${_ENCLAVE_PFX}.33"
 
-export ENCLAVE_OBS_VIP="${_ENCLAVE_PFX}.220"
-export ENCLAVE_OBS_NODE_01="${_ENCLAVE_PFX}.221"
-export ENCLAVE_OBS_NODE_02="${_ENCLAVE_PFX}.222"
-export ENCLAVE_OBS_NODE_03="${_ENCLAVE_PFX}.223"
+export ENCLAVE_OBS_VIP="${_ENCLAVE_PFX}.40"
+export ENCLAVE_OBS_NODE_01="${_ENCLAVE_PFX}.41"
+export ENCLAVE_OBS_NODE_02="${_ENCLAVE_PFX}.42"
+export ENCLAVE_OBS_NODE_03="${_ENCLAVE_PFX}.43"
 
-export ENCLAVE_APPS_VIP="${_ENCLAVE_PFX}.230"
-export ENCLAVE_APPS_NODE_01="${_ENCLAVE_PFX}.231"
-export ENCLAVE_APPS_NODE_02="${_ENCLAVE_PFX}.232"
-export ENCLAVE_APPS_NODE_03="${_ENCLAVE_PFX}.233"
+export ENCLAVE_APPS_VIP="${_ENCLAVE_PFX}.50"
+export ENCLAVE_APPS_NODE_01="${_ENCLAVE_PFX}.51"
+export ENCLAVE_APPS_NODE_02="${_ENCLAVE_PFX}.52"
+export ENCLAVE_APPS_NODE_03="${_ENCLAVE_PFX}.53"
 
-export COMMUNITY_RANCHER_VIP="${_COMMUNITY_PFX}.210"
-export COMMUNITY_RANCHER_NODE_01="${_COMMUNITY_PFX}.211"
-export COMMUNITY_RANCHER_NODE_02="${_COMMUNITY_PFX}.212"
-export COMMUNITY_RANCHER_NODE_03="${_COMMUNITY_PFX}.213"
+export COMMUNITY_RANCHER_VIP="${_COMMUNITY_PFX}.30"
+export COMMUNITY_RANCHER_NODE_01="${_COMMUNITY_PFX}.31"
+export COMMUNITY_RANCHER_NODE_02="${_COMMUNITY_PFX}.32"
+export COMMUNITY_RANCHER_NODE_03="${_COMMUNITY_PFX}.33"
 
-export COMMUNITY_OBS_VIP="${_COMMUNITY_PFX}.220"
-export COMMUNITY_OBS_NODE_01="${_COMMUNITY_PFX}.221"
-export COMMUNITY_OBS_NODE_02="${_COMMUNITY_PFX}.222"
-export COMMUNITY_OBS_NODE_03="${_COMMUNITY_PFX}.223"
+export COMMUNITY_OBS_VIP="${_COMMUNITY_PFX}.40"
+export COMMUNITY_OBS_NODE_01="${_COMMUNITY_PFX}.41"
+export COMMUNITY_OBS_NODE_02="${_COMMUNITY_PFX}.42"
+export COMMUNITY_OBS_NODE_03="${_COMMUNITY_PFX}.43"
 
-export COMMUNITY_APPS_VIP="${_COMMUNITY_PFX}.230"
-export COMMUNITY_APPS_NODE_01="${_COMMUNITY_PFX}.231"
-export COMMUNITY_APPS_NODE_02="${_COMMUNITY_PFX}.232"
-export COMMUNITY_APPS_NODE_03="${_COMMUNITY_PFX}.233"
+export COMMUNITY_APPS_VIP="${_COMMUNITY_PFX}.50"
+export COMMUNITY_APPS_NODE_01="${_COMMUNITY_PFX}.51"
+export COMMUNITY_APPS_NODE_02="${_COMMUNITY_PFX}.52"
+export COMMUNITY_APPS_NODE_03="${_COMMUNITY_PFX}.53"
 
 unset _CARBIDE_PFX _ENCLAVE_PFX _COMMUNITY_PFX
 

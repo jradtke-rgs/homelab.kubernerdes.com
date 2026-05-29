@@ -7,8 +7,9 @@
 #
 # Provides VIPs for:
 #   ${IP_PREFIX}.193  — HAProxy keepalived VIP (internal)
-#   ${IP_PREFIX}.210  — Rancher Manager cluster (80, 443, 6443, 9345)
-#   ${IP_PREFIX}.230  — Applications cluster   (80, 443, 6443, 9345)
+#   ${IP_PREFIX}.30   — Rancher Manager cluster (80, 443, 6443, 9345)
+#   ${IP_PREFIX}.40   — Observability cluster   (80, 443, 6443, 9345)
+#   ${IP_PREFIX}.50   — Applications cluster    (80, 443, 6443, 9345)
 
 # Inline environment config
 ENVIRONMENT="${ENVIRONMENT:-community}"
