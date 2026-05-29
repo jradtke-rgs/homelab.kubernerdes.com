@@ -1,0 +1,1 @@
+ansible -h ./hosts-homelab all -a "uptime"
