@@ -60,7 +60,7 @@ case $(uname -n) in
 export MY_CLUSTER=rancher
 export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
 export MY_RKE2_TOKEN=ChangeMe-RancherRKE2
-export MY_RKE2_VIP=${IP_PREFIX}.210
+export MY_RKE2_VIP=${IP_PREFIX}.30
 export MY_RKE2_HOSTNAME=rancher.${BASE_DOMAIN}
 EOF
   ;;
@@ -69,7 +69,7 @@ EOF
 export MY_CLUSTER=observability
 export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
 export MY_RKE2_TOKEN=ChangeMe-ObsRKE2
-export MY_RKE2_VIP=${IP_PREFIX}.220
+export MY_RKE2_VIP=${IP_PREFIX}.40
 export MY_RKE2_HOSTNAME=observability.${BASE_DOMAIN}
 EOF
   ;;
@@ -78,7 +78,7 @@ EOF
 export MY_CLUSTER=apps
 export MY_RKE2_VERSION=${RKE2_VERSION:-${RKE2_VERSION_DEFAULT}}
 export MY_RKE2_TOKEN=ChangeMe-AppsRKE2
-export MY_RKE2_VIP=${IP_PREFIX}.230
+export MY_RKE2_VIP=${IP_PREFIX}.50
 export MY_RKE2_HOSTNAME=apps.${BASE_DOMAIN}
 EOF
   ;;
