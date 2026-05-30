@@ -1,1 +1,6 @@
-ansible -h ./hosts-homelab all -a "uptime"
+ansible -i ./hosts-homelab all -a "uptime"
+
+
+ansible -i ./hosts-homelab AdminNodeVMs -b -m command -a "shutdown -h now"
+sudo su - -c "virsh list --all"
+# sudo shutdown now -r

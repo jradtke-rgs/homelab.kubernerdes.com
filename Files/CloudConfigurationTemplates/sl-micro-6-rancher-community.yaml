@@ -41,15 +41,9 @@ runcmd:
     HOSTNAME=$(hostname -s 2>/dev/null || cat /etc/hostname | cut -d. -f1)
 
     case "$HOSTNAME" in
-      rancher-01)         IPADDR="10.10.12.211/22"; DNS_DOMAIN="carbide.kubernerdes.com" ;;
-      rancher-02)         IPADDR="10.10.12.212/22"; DNS_DOMAIN="carbide.kubernerdes.com" ;;
-      rancher-03)         IPADDR="10.10.12.213/22"; DNS_DOMAIN="carbide.kubernerdes.com" ;;
-      rancher-11)         IPADDR="10.10.13.211/22"; DNS_DOMAIN="enclave.kubernerdes.com" ;;
-      rancher-12)         IPADDR="10.10.13.212/22"; DNS_DOMAIN="enclave.kubernerdes.com" ;;
-      rancher-13)         IPADDR="10.10.13.213/22"; DNS_DOMAIN="enclave.kubernerdes.com" ;;
-      rancher-21)         IPADDR="10.10.14.211/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
-      rancher-22)         IPADDR="10.10.14.212/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
-      rancher-23)         IPADDR="10.10.14.213/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
+      rancher-01)         IPADDR="10.10.14.31/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
+      rancher-02)         IPADDR="10.10.14.32/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
+      rancher-03)         IPADDR="10.10.14.33/22"; DNS_DOMAIN="community.kubernerdes.com" ;;
       *)
         echo "$(date): Unknown hostname '$HOSTNAME' - skipping static IP" | tee -a "$LOG_FILE"
         exit 0
