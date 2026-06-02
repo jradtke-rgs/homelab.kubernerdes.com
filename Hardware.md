@@ -11,7 +11,6 @@ Physical hardware, bill of materials, and network switch layout.
 | nuc-01 | Harvester node 1 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-02 | Harvester node 2 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-03 | Harvester node 3 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
-|-------:--------|:------------|:------|:----|------:|:--------:|---------------:|----------------:|
 | nuc-01 | Harvester node 1 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
 | nuc-02 | Harvester node 2 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
 | nuc-03 | Harvester node 3 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
