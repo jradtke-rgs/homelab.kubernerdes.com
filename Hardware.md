@@ -11,7 +11,6 @@ Physical hardware, bill of materials, and network switch layout.
 | nuc-01 | Harvester node 1 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-02 | Harvester node 2 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
 | nuc-03 | Harvester node 3 | carbide | NUC10i7FNH | i7-10710U | 12 | 64 | 1843 | 932 |
-¹ nas storage: 1 × 1TB SSD (OS), 3 × 4TB HDD (NAS pool, TrueNAS Scale); NFS share TBD
 |-------:--------|:------------|:------|:----|------:|:--------:|---------------:|----------------:|
 | nuc-01 | Harvester node 1 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
 | nuc-02 | Harvester node 2 | enclave | ROG STRIX Z490-E | i9-285K | 24 | TBD | TBD | TBD |
@@ -19,6 +18,7 @@ Physical hardware, bill of materials, and network switch layout.
 | nuc-01 | Harvester node 1 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
 | nuc-02 | Harvester node 2 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
 | nuc-03 | Harvester node 3 | community | NUC13ANHi7 | i7-1360P | 16 | 64 | 1843 | 932 |
+¹ nas storage: 1 × 1TB SSD (OS), 3 × 4TB HDD (NAS pool, TrueNAS Scale); NFS share TBD
 
 ## Power Consumption (Estimated)
 
