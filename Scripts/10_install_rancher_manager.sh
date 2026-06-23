@@ -42,14 +42,7 @@ kubectl get nodes
 # ---------------------------------------------------------------------------
 # cert-manager
 # ---------------------------------------------------------------------------
-echo "==> Installing cert-manager ${CERTMGR_VERSION}..."
-helm upgrade --install cert-manager "${CERT_MANAGER_SOURCE}" \
-  --namespace cert-manager \
-  --create-namespace \
-  --version "${CERTMGR_VERSION}" \
-  --set crds.enabled=true
-
-kubectl -n cert-manager rollout status deploy/cert-manager --timeout=120s
+"${SCRIPT_DIR}/modules/common/install_cert_manager.sh"
 
 # ---------------------------------------------------------------------------
 # Vault ClusterIssuer for cert-manager
