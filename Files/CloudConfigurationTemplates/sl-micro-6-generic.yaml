@@ -3,6 +3,12 @@
 package_update: true
 packages:
   - qemu-guest-agent
+write_files:
+  - path: /etc/sudoers.d/sles
+    content: "sles ALL=(ALL) NOPASSWD:ALL\n"
+    permissions: '0440'
+    owner: root:root
+
 runcmd:
   - - systemctl
     - enable
