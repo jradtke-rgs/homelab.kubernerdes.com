@@ -23,7 +23,7 @@ users:
     # Allow password authentication (false = unlocked)
     lock_passwd: false
     # Assign user to groups
-    groups: users
+    groups: users,wheel
     # Set default shell
     shell: /bin/bash
     # Add SSH public keys for passwordless authentication
