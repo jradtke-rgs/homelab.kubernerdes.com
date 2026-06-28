@@ -7,7 +7,7 @@ set -euo pipefail
 # Idempotent — safe to re-run; unreachable nodes are skipped with a warning.
 #
 # By default targets all three environments. Override to target one:
-#   ENVIRONMENT=carbide bash 03_distribute_ca.sh
+#   ENVIRONMENT=prime bash 03_distribute_ca.sh
 #
 # What this pushes:
 #   - Harvester physical nodes (NUC01-03): root@<ip>
@@ -91,7 +91,7 @@ distribute_to_env() {
 if [[ -n "${ENVIRONMENT:-}" && "${ENVIRONMENT}" != "all" ]]; then
   TARGETS=("${ENVIRONMENT}")
 else
-  TARGETS=(carbide enclave community)
+  TARGETS=(prime enclave community)
 fi
 
 echo "==> Distributing homelab root CA"

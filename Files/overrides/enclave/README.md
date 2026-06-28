@@ -29,4 +29,4 @@ common config file. Key examples:
 
 ## How overrides are applied
 
-See `Files/overrides/carbide/README.md` for the pattern.
+See `Files/overrides/prime/README.md` for the pattern.

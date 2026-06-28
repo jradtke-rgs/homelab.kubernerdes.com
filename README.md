@@ -1,6 +1,6 @@
 # homelab.kubernerdes.com
 
-> A single-codebase deployment framework for building a Kubernetes homelab using SUSE Rancher, Harvester, and related tooling — across Community, Carbide, and Enclave environments.
+> A single-codebase deployment framework for building a Kubernetes homelab using SUSE Rancher, Harvester, and related tooling — across Community, Prime, and Enclave environments.
 
 This repository contains the scripts, configuration files, and documentation for deploying the full SUSE/RGS stack on small form-factor hardware (Intel NUCs). It is designed to be run against three distinct deployment environments using a shared codebase, with environment-specific behavior driven entirely by configuration.
 
@@ -29,13 +29,13 @@ This repository contains the scripts, configuration files, and documentation for
 | **Homelab** | Common infrastructure utilized by any of the other Environments | 10.10.12.0/24 | homelab.kubernerdes.com | nuc-00, nuc-00-01/02/03 |
 | **Enclave** | RGS software synced via Hauler, served from a local Harbor registry (air-gapped) | 10.10.13.0/24 | enclave.kubernerdes.com | nuc-01/02/03 |
 | **Community** | SUSE/upstream bits pulled from public registries | 10.10.14.0/24 | community.kubernerdes.com | nuc-01/02/03 |
-| **Carbide** | RGS software pulled from the RGS registry over the internet | 10.10.15.0/24 | carbide.kubernerdes.com | nuc-01/02/03 |
+| **Prime** | RGS software pulled from the RGS registry over the internet | 10.10.15.0/24 | prime.kubernerdes.com | nuc-01/02/03 |
 
 All three environments share the `10.10.12.0/22` supernet and have dedicated hardware — they can run simultaneously.
 
-NUC nodes use `nuc-01/02/03` for all environments; the ENVIRONMENT variable (and DNS domain) differentiates them. Other cluster roles (rancher, observability, apps) follow a digit-prefix scheme: carbide=0x, enclave=1x, community=2x (e.g. rancher-01/02/03, rancher-11/12/13, rancher-21/22/23).
+NUC nodes use `nuc-01/02/03` for all environments; the ENVIRONMENT variable (and DNS domain) differentiates them. Other cluster roles (rancher, observability, apps) follow a digit-prefix scheme: prime=0x, enclave=1x, community=2x (e.g. rancher-01/02/03, rancher-11/12/13, rancher-21/22/23).
 
-**Milestones:** Carbide MVP → Enclave → Community
+**Milestones:** Prime MVP → Enclave → Community
 
 ---
 
@@ -47,7 +47,7 @@ NUC nodes use `nuc-01/02/03` for all environments; the ENVIRONMENT variable (and
 │   ├── env.sh                    # Master config — sets ENVIRONMENT, sources env.d/
 │   ├── env.d/
 │   │   ├── community.sh          # Community-specific vars (public registry sources)
-│   │   ├── carbide.sh            # Carbide-specific vars (RGS registry, token)
+│   │   ├── prime.sh              # Prime-specific vars (RGS registry, token)
 │   │   └── enclave.sh            # Enclave-specific vars (Harbor URL, Hauler paths)
 │   │
 │   ├── 00_preflight.sh           # Verify prerequisites before deployment
@@ -58,7 +58,7 @@ NUC nodes use `nuc-01/02/03` for all environments; the ENVIRONMENT variable (and
 │   ├── 20_install_security.sh
 │   ├── 21_install_observability.sh
 │   ├── 30_deploy_apps.sh
-│   ├── 80_compare_images.sh      # Community vs Carbide image comparison (NeuVector)
+│   ├── 80_compare_images.sh      # Community vs Prime image comparison (NeuVector)
 │   │
 │   ├── install_RKE2.sh           # Install RKE2 on a cluster node; run on each node as root
 │   ├── install_RKE2_postboot.sh  # Post-reboot kubeconfig setup (SL-Micro path)
@@ -68,7 +68,7 @@ NUC nodes use `nuc-01/02/03` for all environments; the ENVIRONMENT variable (and
 │   ├── nuc-00-03/                # HAProxy infra VM scripts
 │   │
 │   └── modules/                  # Environment-specific scripts, invoked only when needed
-│       ├── carbide/
+│       ├── prime/
 │       │   └── registry_auth.sh
 │       └── enclave/
 │           ├── hauler_sync.sh
@@ -82,7 +82,7 @@ NUC nodes use `nuc-01/02/03` for all environments; the ENVIRONMENT variable (and
 │   ├── CloudConfigurationTemplates/  # cloud-init YAML templates for VMs
 │   │
 │   └── overrides/           # Environment-specific file overrides (applied over common Files/)
-│       ├── carbide/         # e.g. Harvester registry mirror → RGS registry
+│       ├── prime/           # e.g. Harvester registry mirror → RGS registry
 │       └── enclave/         # e.g. Harvester registry mirror → local Harbor
 │       # Community has no overrides — it is the base layer
 │
@@ -109,7 +109,7 @@ Environment-specific *steps* (not just config values) live in `Scripts/modules/`
 ### Setting the environment
 
 ```bash
-export ENVIRONMENT=community   # or carbide, enclave
+export ENVIRONMENT=community   # or prime, enclave
 source Scripts/env.sh
 ```
 
@@ -126,7 +126,7 @@ All IPs are derived from `${IP_PREFIX}` defined in `env.sh`.
 | .10 | nuc-00 | Admin host (Apache + KVM + libvirt) |
 | .93 | nuc-00-03 | HAProxy load balancer + Keepalived VIP |
 | .100 | harvester | Harvester cluster VIP |
-| .101 | nuc-X1 | Harvester node 1 (X=0 carbide, 1 enclave, 2 community) |
+| .101 | nuc-X1 | Harvester node 1 (X=0 prime, 1 enclave, 2 community) |
 | .102 | nuc-X2 | Harvester node 2 |
 | .103 | nuc-X3 | Harvester node 3 |
 | .210 | rancher | Rancher Manager cluster VIP |
@@ -146,10 +146,10 @@ Wildcard DNS: `*.apps.${ENVIRONMENT}.kubernerdes.com` → `${IP_PREFIX}.230`
 
 - 3 x NUCs (or similar hardware) for Harvester nodes
 - 1 x admin workstation (I use a fourth NUC as `nuc-00`)
-- Internet connectivity (Community and Carbide) or pre-synced Hauler store (Enclave)
+- Internet connectivity (Community and Prime) or pre-synced Hauler store (Enclave)
 - [Hardware Overview](./Hardware.md)
 
-For Carbide and Enclave: RGS Carbide portal access — request a license from the RGS Account Team.
+For Prime and Enclave: RGS Carbide portal access — request a license from the RGS Account Team.
 
 ---
 
@@ -159,7 +159,7 @@ For Carbide and Enclave: RGS Carbide portal access — request a license from th
 2. Deploy **Infra VMs** (`nuc-00-01`, `nuc-00-02`, `nuc-00-03`) — DNS, DHCP, TFTP, HAProxy
 3. *(Enclave only)* Run `modules/enclave/hauler_sync.sh` — sync all artifacts
 4. *(Enclave only)* Run `modules/enclave/harbor_setup.sh` — stand up local registry
-5. *(Carbide only)* Run `modules/carbide/registry_auth.sh` — configure registry credentials
+5. *(Prime only)* Run `modules/prime/registry_auth.sh` — configure registry credentials
 6. Build the **Harvester Cluster** (`nuc-01`, `nuc-02`, `nuc-03`) via PXE or USB
 7. Run `02_setup_vault.sh` — install Vault on `nuc-00`, initialize PKI engine as the homelab root CA, publish cert via Apache
 8. Run `07_post_configure_harvester.sh` — cloud images, cloud-init templates, rancher-monitoring add-on
@@ -173,7 +173,7 @@ For Carbide and Enclave: RGS Carbide portal access — request a license from th
 2. Run `20_install_security.sh` — deploy NeuVector on the applications cluster
 3. Run `21_install_observability.sh` — deploy SUSE Observability stack
 4. Run `30_deploy_apps.sh` — deploy sample workloads
-5. Run `80_compare_images.sh` — compare community vs Carbide images side-by-side in NeuVector
+5. Run `80_compare_images.sh` — compare community vs Prime images side-by-side in NeuVector
 
 > **Retroactive CA distribution:** If you add nodes or need to push the root CA to existing nodes, run `03_distribute_ca.sh` from `nuc-00` at any time.
 

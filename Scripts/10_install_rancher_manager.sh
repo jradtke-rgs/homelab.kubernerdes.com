@@ -9,13 +9,13 @@ set -euo pipefail
 #   - RKE2 installed on rancher-01/02/03 (Scripts/install_RKE2.sh)
 #   - kubectl and helm available on nuc-00
 #   - SSH access to rancher-01 via sles@rancher-01
-#   - For Carbide/Enclave: run the appropriate module first
-#       Carbide: Scripts/modules/carbide/registry_auth.sh
+#   - For Prime/Enclave: run the appropriate module first
+#       Prime:   Scripts/modules/prime/registry_auth.sh
 #       Enclave: Scripts/modules/enclave/harbor_setup.sh
 #
 # Chart sources are environment-controlled via env.d/:
 #   community → rancher-latest (releases.rancher.com)
-#   carbide   → rancher-prime  (charts.rancher.com)
+#   prime     → rancher-prime  (charts.rancher.com)
 #   enclave   → local Harbor
 #
 # Reference:
@@ -110,7 +110,7 @@ helm repo update
 
 echo "==> Installing Rancher ${RANCHER_VERSION}..."
 RANCHER_EXTRA_ARGS=()
-if [[ "${ENVIRONMENT}" =~ ^(carbide|enclave)$ ]]; then
+if [[ "${ENVIRONMENT}" =~ ^(prime|enclave)$ ]]; then
   # Use the RGS registry as the default for all Rancher-deployed images
   RANCHER_EXTRA_ARGS+=(--set "systemDefaultRegistry=${RGS_REGISTRY}")
 fi

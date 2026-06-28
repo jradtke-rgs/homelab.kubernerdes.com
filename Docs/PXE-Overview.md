@@ -5,7 +5,7 @@ How network boot works in this environment, from power-on to Harvester install.
 ## Boot Flow
 
 ```
-Power on (nuc-X1/X2/X3 — X=0 carbide, 1 enclave, 2 community)
+Power on (nuc-X1/X2/X3 — X=0 prime, 1 enclave, 2 community)
   └─► UEFI firmware → PXE boot via NIC
         └─► DHCP request to nuc-00-01 (${IP_PREFIX}.8)
               └─► DHCP returns:

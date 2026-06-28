@@ -24,7 +24,7 @@ set -euo pipefail
 #
 # Sign a cert manually after setup:
 #   VAULT_TOKEN=$(jq -r .root_token /root/vault-init.json)
-#   vault write pki/issue/homelab-server common_name=rancher.carbide.kubernerdes.com
+#   vault write pki/issue/homelab-server common_name=rancher.prime.kubernerdes.com
 #
 # Distribute root CA to a cluster node:
 #   scp /etc/ssl/homelab-root-ca.crt root@<node>:/etc/pki/trust/anchors/homelab-root-ca.crt
@@ -321,7 +321,7 @@ echo "      bash Scripts/03_distribute_ca.sh"
 echo
 echo "    Issue a cert manually:"
 echo "      VAULT_TOKEN=\$(jq -r .root_token ${VAULT_INIT_FILE})"
-echo "      vault write pki/issue/homelab-server common_name=rancher.carbide.${DOMAIN}"
+echo "      vault write pki/issue/homelab-server common_name=rancher.prime.${DOMAIN}"
 echo
 echo "    cert-manager ClusterIssuer is created by 10_install_rancher_manager.sh"
 echo

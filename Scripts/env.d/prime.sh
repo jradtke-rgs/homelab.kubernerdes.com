@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# env.d/carbide.sh — Carbide environment variables
+# env.d/prime.sh — Prime environment variables
 #
-# Sourced automatically by env.sh when ENVIRONMENT=carbide.
+# Sourced automatically by env.sh when ENVIRONMENT=prime.
 # Do not source directly.
 #
-# Carbide = RGS software pulled from the RGS registry over the internet.
+# Prime = RGS software pulled from the RGS registry over the internet.
 # Requires a valid RGS Carbide subscription and registry credentials stored in
 # ~/.config/RGS.creds (RGS_USERNAME and RGS_TOKEN).
 

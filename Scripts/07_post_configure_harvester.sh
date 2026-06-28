@@ -14,7 +14,7 @@ set -euo pipefail
 #   2. Imports cloud-init templates from this repo (served via Apache)
 #   3. Enables the rancher-monitoring add-on
 #
-# For Carbide/Enclave: images and templates are served from local Harbor/Hauler
+# For Prime/Enclave: images and templates are served from local Harbor/Hauler
 # rather than downloaded from the internet — controlled by REGISTRY_MIRROR and
 # IMAGES_BASE_URL derived from env vars.
 

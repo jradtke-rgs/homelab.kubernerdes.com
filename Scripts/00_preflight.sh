@@ -102,7 +102,7 @@ fi
 # ---------------------------------------------------------------------------
 # Environment-specific checks
 # ---------------------------------------------------------------------------
-if [[ "${ENVIRONMENT}" == "carbide" || "${ENVIRONMENT}" == "enclave" ]]; then
+if [[ "${ENVIRONMENT}" == "prime" || "${ENVIRONMENT}" == "enclave" ]]; then
   echo
   echo "--- RGS credentials ---"
   if [[ -n "${RGS_TOKEN:-}" ]]; then

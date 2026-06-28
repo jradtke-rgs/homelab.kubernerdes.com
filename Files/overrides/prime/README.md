@@ -1,9 +1,9 @@
-# Files/overrides/carbide/
+# Files/overrides/prime/
 
-Environment-specific file overrides for the **Carbide** environment.
+Environment-specific file overrides for the **Prime** environment.
 
 Files in this directory are applied **on top of** the common `Files/` baseline
-when `ENVIRONMENT=carbide`. They follow the same directory structure as `Files/`
+when `ENVIRONMENT=prime`. They follow the same directory structure as `Files/`
 so the override path is clear.
 
 ## Current overrides
@@ -14,7 +14,7 @@ so the override path is clear.
 
 ## When to add an override
 
-Add a file here when the Carbide environment requires a different version of a
+Add a file here when the Prime environment requires a different version of a
 common config file. For example:
 
 - **Harvester registry mirror** — `nuc-00-01/etc/registries.yaml` pointing to

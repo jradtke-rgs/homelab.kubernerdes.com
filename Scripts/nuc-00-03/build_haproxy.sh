@@ -17,7 +17,7 @@ DOMAIN="${DOMAIN:-kubernerdes.com}"
 BASE_DOMAIN="${BASE_DOMAIN:-${ENVIRONMENT}.${DOMAIN}}"
 
 case "${ENVIRONMENT}" in
-  carbide)   IP_PREFIX="10.10.15" ;;
+  prime)     IP_PREFIX="10.10.15" ;;
   enclave)   IP_PREFIX="10.10.13" ;;
   community) IP_PREFIX="10.10.14" ;;
   *) echo "ERROR: Unknown ENVIRONMENT '${ENVIRONMENT}'" >&2; exit 1 ;;

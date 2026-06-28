@@ -8,11 +8,11 @@ set -euo pipefail
 # Prerequisites:
 #   - Apps cluster deployed via Rancher Manager (3-node RKE2 on SL-Micro)
 #   - KUBECONFIG saved as ${KUBECONFIG_APPS}
-#   - For Carbide/Enclave: registry credentials configured
+#   - For Prime/Enclave: registry credentials configured
 #
 # Chart sources are environment-controlled via env.d/:
 #   community → neuvector/core from neuvector.github.io
-#   carbide   → neuvector/core from neuvector.github.io (RGS image override)
+#   prime     → neuvector/core from neuvector.github.io (RGS image override)
 #   enclave   → neuvector/core from local Harbor
 #
 # Reference:

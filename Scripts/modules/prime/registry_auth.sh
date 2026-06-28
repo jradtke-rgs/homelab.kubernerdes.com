@@ -1,10 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-# modules/carbide/registry_auth.sh — Configure RGS Carbide registry credentials
+# modules/prime/registry_auth.sh — Configure RGS Carbide registry credentials
 #
 # Run ONCE from nuc-00 before the main deployment sequence when
-# ENVIRONMENT=carbide. This script is not needed for community or enclave.
+# ENVIRONMENT=prime. This script is not needed for community or enclave.
 #
 # Prerequisites:
 #   - RGS_TOKEN environment variable set:
@@ -21,8 +21,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../../env.sh
 source "${SCRIPT_DIR}/../../env.sh"
 
-if [[ "${ENVIRONMENT}" != "carbide" ]]; then
-  echo "ERROR: This module is for ENVIRONMENT=carbide only (got: ${ENVIRONMENT})" >&2
+if [[ "${ENVIRONMENT}" != "prime" ]]; then
+  echo "ERROR: This module is for ENVIRONMENT=prime only (got: ${ENVIRONMENT})" >&2
   exit 1
 fi
 
@@ -71,5 +71,5 @@ docker pull "${RGS_REGISTRY}/rgs/rancher:latest" 2>/dev/null \
 # ---------------------------------------------------------------------------
 
 echo
-echo "==> Carbide registry auth complete."
+echo "==> Prime environment: RGS registry auth complete."
 echo "    Proceed with the numbered deployment scripts (00_preflight.sh ...)"
