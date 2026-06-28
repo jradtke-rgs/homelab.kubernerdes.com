@@ -8,8 +8,7 @@ This repository contains the scripts, configuration files, and documentation for
 
 **Associated Documentation Site:** [docs.homelab.kubernerdes.com](https://jradtke-rgs.github.io/docs.homelab.kubernerdes.com/)
 
-![Images/Software_Lifecycle_Path_Gemini.png](Images/Software_Lifecycle_Path_Gemini.png)
-
+**Note:** RGS Carbide content will migrate to https://github.com/jradtke-rgs/carbide-enclave.kubernerdes.com
 
 ---
 
