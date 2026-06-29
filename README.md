@@ -34,6 +34,9 @@ All three environments share the `10.10.12.0/22` supernet and have dedicated har
 
 NUC nodes use `nuc-01/02/03` for all environments; the ENVIRONMENT variable (and DNS domain) differentiates them. Other cluster roles (rancher, observability, apps) follow a digit-prefix scheme: prime=0x, enclave=1x, community=2x (e.g. rancher-01/02/03, rancher-11/12/13, rancher-21/22/23).
 
+![Environment Overview](Images/Environment_Overview.png)
+
+
 **Milestones:** Prime MVP → Enclave → Community
 
 ---
