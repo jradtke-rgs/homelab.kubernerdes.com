@@ -16,7 +16,12 @@ This repository contains the scripts, configuration files, and documentation for
 
 - Single codebase that can build out a complete environment end-to-end
 - Environment selection via a single config variable — no forking, no duplicating scripts
-- Deploy: Harvester (virtualization), RKE2, Rancher Manager, SUSE Observability, and a workload cluster with NeuVector
+- Deploy: 
+  - Harvester (SUSE Virtualization) 
+  - RKE2 
+  - Rancher Manager 
+  - StackState (SUSE Observability)
+  - NeuVector (SUSE Security) running on an RKE2 "Apps" Cluster
 - Human-readable documentation that explains not just *what* to run, but *why*
 
 ---
