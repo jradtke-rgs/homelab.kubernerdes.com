@@ -38,29 +38,28 @@ if ! kubectl --kubeconfig "${KUBECONFIG_RANCHER}" get nodes &>/dev/null; then
 fi
 
 # ---------------------------------------------------------------------------
-# Retrieve kubeconfig via Rancher Manager API
+# Retrieve kubeconfig via Rancher management cluster CRDs
+# KUBECONFIG_RANCHER is the RKE2 admin cert-based kubeconfig (not a Rancher
+# UI token), so we use kubectl against the management cluster directly rather
+# than the Rancher v3 REST API.
 # ---------------------------------------------------------------------------
 echo "==> Fetching observability kubeconfig from Rancher Manager (cluster: ${OBS_RANCHER_CLUSTER_NAME})..."
 
-RANCHER_TOKEN=$(kubectl --kubeconfig "${KUBECONFIG_RANCHER}" config view --raw \
-  -o jsonpath='{.users[0].user.token}')
+MGMT_CLUSTER_ID=$(kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
+  get clusters.provisioning.cattle.io "${OBS_RANCHER_CLUSTER_NAME}" \
+  -n fleet-default \
+  -o jsonpath='{.status.clusterName}' 2>/dev/null || true)
 
-CLUSTER_ID=$(curl -sk \
-  -H "Authorization: Bearer ${RANCHER_TOKEN}" \
-  "https://${RANCHER_HOSTNAME}/v3/clusters" \
-  | jq -r --arg name "${OBS_RANCHER_CLUSTER_NAME}" '.data[] | select(.name == $name) | .id')
-
-if [[ -z "${CLUSTER_ID}" ]]; then
-  echo "ERROR: Cluster '${OBS_RANCHER_CLUSTER_NAME}' not found in Rancher Manager" >&2
+if [[ -z "${MGMT_CLUSTER_ID}" ]]; then
+  echo "ERROR: Cluster '${OBS_RANCHER_CLUSTER_NAME}' not found in fleet-default namespace" >&2
   echo "       Check OBS_RANCHER_CLUSTER_NAME matches the cluster name in the Rancher UI." >&2
   exit 1
 fi
 
 mkdir -p "${HOME}/.kube"
-curl -sk -X POST \
-  -H "Authorization: Bearer ${RANCHER_TOKEN}" \
-  "https://${RANCHER_HOSTNAME}/v3/clusters/${CLUSTER_ID}?action=generateKubeconfig" \
-  | jq -r '.config' > "${KUBECONFIG_OBS}"
+kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
+  get secret -n "${MGMT_CLUSTER_ID}" "${MGMT_CLUSTER_ID}-kubeconfig" \
+  -o jsonpath='{.data.value}' | base64 -d > "${KUBECONFIG_OBS}"
 chmod 600 "${KUBECONFIG_OBS}"
 
 export KUBECONFIG="${KUBECONFIG_OBS}"
