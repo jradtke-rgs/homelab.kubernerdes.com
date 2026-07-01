@@ -45,9 +45,12 @@ fi
 # ---------------------------------------------------------------------------
 echo "==> Fetching observability kubeconfig from Rancher Manager (cluster: ${OBS_RANCHER_CLUSTER_NAME})..."
 
-if ! kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
-    get clusters.provisioning.cattle.io "${OBS_RANCHER_CLUSTER_NAME}" \
-    -n fleet-default &>/dev/null; then
+MGMT_CLUSTER_ID=$(kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
+  get clusters.provisioning.cattle.io "${OBS_RANCHER_CLUSTER_NAME}" \
+  -n fleet-default \
+  -o jsonpath='{.status.clusterName}' 2>/dev/null || true)
+
+if [[ -z "${MGMT_CLUSTER_ID}" ]]; then
   echo "ERROR: Cluster '${OBS_RANCHER_CLUSTER_NAME}' not found in fleet-default namespace" >&2
   echo "       Check OBS_RANCHER_CLUSTER_NAME matches the cluster name in the Rancher UI." >&2
   exit 1
@@ -57,6 +60,10 @@ mkdir -p "${HOME}/.kube"
 kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
   get secret -n fleet-default "${OBS_RANCHER_CLUSTER_NAME}-kubeconfig" \
   -o jsonpath='{.data.value}' | base64 -d > "${KUBECONFIG_OBS}"
+
+# The secret's kubeconfig points to Rancher's internal ClusterIP; rewrite
+# the server URL to the external hostname so nuc-00 can reach it.
+sed -i "s|server:.*|server: https://${RANCHER_HOSTNAME}/k8s/clusters/${MGMT_CLUSTER_ID}|" "${KUBECONFIG_OBS}"
 chmod 664 "${KUBECONFIG_OBS}"
 
 export KUBECONFIG="${KUBECONFIG_OBS}"
