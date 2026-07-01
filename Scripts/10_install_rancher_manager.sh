@@ -25,6 +25,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=env.sh
 source "${SCRIPT_DIR}/env.sh"
 
+# ---------------------------------------------------------------------------
+# Validate harvester kubeconfig and resolved rancher-01 IP
+# ---------------------------------------------------------------------------
+_HARVESTER_KC="${HOME}/.kube/${ENVIRONMENT}-harvester.kubeconfig"
+if [[ ! -f "${_HARVESTER_KC}" ]]; then
+  echo "ERROR: Harvester kubeconfig not found: ${_HARVESTER_KC}" >&2
+  echo "       Create it first, then re-run this script." >&2
+  exit 1
+fi
+if [[ -z "${RANCHER_NODE_01:-}" ]]; then
+  echo "ERROR: Could not resolve IP for rancher-01 from ${_HARVESTER_KC}" >&2
+  exit 1
+fi
+unset _HARVESTER_KC
+
 KUBECONFIG_PATH="${KUBECONFIG_RANCHER}"
 
 # ---------------------------------------------------------------------------
