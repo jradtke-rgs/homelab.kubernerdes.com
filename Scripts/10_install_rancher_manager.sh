@@ -54,6 +54,7 @@ echo "==> Fetching kubeconfig from rancher-01 (${RANCHER_NODE_01})..."
 mkdir -p "${HOME}/.kube"
 scp ${SSH_OPTS} sles@${RANCHER_NODE_01}:.kube/config "${KUBECONFIG_PATH}"
 sed -i -e "s/127.0.0.1/${RANCHER_VIP}/g" "${KUBECONFIG_PATH}"
+chmod 664 "${KUBECONFIG_PATH}"
 export KUBECONFIG="${KUBECONFIG_PATH}"
 
 echo "==> Cluster nodes:"

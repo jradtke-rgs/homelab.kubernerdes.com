@@ -57,7 +57,7 @@ mkdir -p "${HOME}/.kube"
 kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
   get secret -n fleet-default "${OBS_RANCHER_CLUSTER_NAME}-kubeconfig" \
   -o jsonpath='{.data.value}' | base64 -d > "${KUBECONFIG_OBS}"
-chmod 600 "${KUBECONFIG_OBS}"
+chmod 664 "${KUBECONFIG_OBS}"
 
 export KUBECONFIG="${KUBECONFIG_OBS}"
 echo "==> Observability cluster nodes:"
