@@ -63,7 +63,12 @@ kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
 
 # The secret's kubeconfig points to Rancher's internal ClusterIP; rewrite
 # the server URL to the external hostname so nuc-00 can reach it.
-sed -i "s|server:.*|server: https://${RANCHER_HOSTNAME}/k8s/clusters/${MGMT_CLUSTER_ID}|" "${KUBECONFIG_OBS}"
+# Also replace certificate-authority-data with insecure-skip-tls-verify
+# until a CA is integrated — Rancher's dynamiclistener-ca is self-signed.
+sed -i \
+  -e "s|server:.*|server: https://${RANCHER_HOSTNAME}/k8s/clusters/${MGMT_CLUSTER_ID}|" \
+  -e "s|certificate-authority-data:.*|insecure-skip-tls-verify: true|" \
+  "${KUBECONFIG_OBS}"
 chmod 664 "${KUBECONFIG_OBS}"
 
 export KUBECONFIG="${KUBECONFIG_OBS}"
