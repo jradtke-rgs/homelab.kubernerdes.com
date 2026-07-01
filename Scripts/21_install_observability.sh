@@ -45,12 +45,9 @@ fi
 # ---------------------------------------------------------------------------
 echo "==> Fetching observability kubeconfig from Rancher Manager (cluster: ${OBS_RANCHER_CLUSTER_NAME})..."
 
-MGMT_CLUSTER_ID=$(kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
-  get clusters.provisioning.cattle.io "${OBS_RANCHER_CLUSTER_NAME}" \
-  -n fleet-default \
-  -o jsonpath='{.status.clusterName}' 2>/dev/null || true)
-
-if [[ -z "${MGMT_CLUSTER_ID}" ]]; then
+if ! kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
+    get clusters.provisioning.cattle.io "${OBS_RANCHER_CLUSTER_NAME}" \
+    -n fleet-default &>/dev/null; then
   echo "ERROR: Cluster '${OBS_RANCHER_CLUSTER_NAME}' not found in fleet-default namespace" >&2
   echo "       Check OBS_RANCHER_CLUSTER_NAME matches the cluster name in the Rancher UI." >&2
   exit 1
@@ -58,7 +55,7 @@ fi
 
 mkdir -p "${HOME}/.kube"
 kubectl --kubeconfig "${KUBECONFIG_RANCHER}" \
-  get secret -n "${MGMT_CLUSTER_ID}" "${MGMT_CLUSTER_ID}-kubeconfig" \
+  get secret -n fleet-default "${OBS_RANCHER_CLUSTER_NAME}-kubeconfig" \
   -o jsonpath='{.data.value}' | base64 -d > "${KUBECONFIG_OBS}"
 chmod 600 "${KUBECONFIG_OBS}"
 
