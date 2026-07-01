@@ -126,10 +126,11 @@ export RANCHER_NODE_02="$(harvester_vm_ip "rancher-02")"
 export RANCHER_NODE_03="$(harvester_vm_ip "rancher-03")"
 
 # ---------------------------------------------------------------------------
-# RKE2 cluster — Observability (VM names: observability-<random>)
+# RKE2 cluster — Observability (provisioned by Rancher Manager)
 # ---------------------------------------------------------------------------
 export OBS_VIP="${IP_PREFIX}.40"
 export OBS_HOSTNAME="observability.${BASE_DOMAIN}"
+export OBS_RANCHER_CLUSTER_NAME="${OBS_RANCHER_CLUSTER_NAME:-observability}"
 mapfile -t _OBS_IPS < <(harvester_vm_ips_by_prefix "observability-")
 export OBS_NODE_01="${_OBS_IPS[0]:-}"
 export OBS_NODE_02="${_OBS_IPS[1]:-}"

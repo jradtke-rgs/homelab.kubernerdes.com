@@ -6,9 +6,9 @@ set -euo pipefail
 # Run from nuc-00 with KUBECONFIG pointing to the observability cluster.
 #
 # Prerequisites:
-#   - 3 SL-Micro VMs deployed on Harvester (observability-01/02/03)
-#   - RKE2 installed on all 3 (Scripts/install_RKE2.sh — observability case)
-#   - KUBECONFIG saved as ${KUBECONFIG_OBS}
+#   - Rancher Manager up and the observability cluster provisioned from it
+#   - KUBECONFIG_RANCHER at ~/.kube/${ENVIRONMENT}-rancher.kubeconfig
+#     (Scripts/10_install_rancher_manager.sh saves this automatically)
 #   - O11Y_LICENSE environment variable set (SUSE Observability license key)
 #     export O11Y_LICENSE=<your-license-key>
 #
@@ -20,6 +20,48 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/env.sh"
 
 [ -z "${O11Y_LICENSE:-}" ] && { echo "ERROR: O11Y_LICENSE is not set."; exit 1; }
+
+# ---------------------------------------------------------------------------
+# Validate Rancher Manager kubeconfig
+# Observability is provisioned by Rancher (not imported), so its kubeconfig
+# is fetched via the Rancher v3 API — no SSH to obs nodes required.
+# ---------------------------------------------------------------------------
+if [[ ! -f "${KUBECONFIG_RANCHER}" ]]; then
+  echo "ERROR: Rancher kubeconfig not found: ${KUBECONFIG_RANCHER}" >&2
+  echo "       Run Scripts/10_install_rancher_manager.sh first." >&2
+  exit 1
+fi
+if ! kubectl --kubeconfig "${KUBECONFIG_RANCHER}" get nodes &>/dev/null; then
+  echo "ERROR: Cannot connect to Rancher management cluster using ${KUBECONFIG_RANCHER}" >&2
+  echo "       Check that the kubeconfig is valid and the cluster is reachable." >&2
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Retrieve kubeconfig via Rancher Manager API
+# ---------------------------------------------------------------------------
+echo "==> Fetching observability kubeconfig from Rancher Manager (cluster: ${OBS_RANCHER_CLUSTER_NAME})..."
+
+RANCHER_TOKEN=$(kubectl --kubeconfig "${KUBECONFIG_RANCHER}" config view --raw \
+  -o jsonpath='{.users[0].user.token}')
+
+CLUSTER_ID=$(curl -sk \
+  -H "Authorization: Bearer ${RANCHER_TOKEN}" \
+  "https://${RANCHER_HOSTNAME}/v3/clusters" \
+  | jq -r --arg name "${OBS_RANCHER_CLUSTER_NAME}" '.data[] | select(.name == $name) | .id')
+
+if [[ -z "${CLUSTER_ID}" ]]; then
+  echo "ERROR: Cluster '${OBS_RANCHER_CLUSTER_NAME}' not found in Rancher Manager" >&2
+  echo "       Check OBS_RANCHER_CLUSTER_NAME matches the cluster name in the Rancher UI." >&2
+  exit 1
+fi
+
+mkdir -p "${HOME}/.kube"
+curl -sk -X POST \
+  -H "Authorization: Bearer ${RANCHER_TOKEN}" \
+  "https://${RANCHER_HOSTNAME}/v3/clusters/${CLUSTER_ID}?action=generateKubeconfig" \
+  | jq -r '.config' > "${KUBECONFIG_OBS}"
+chmod 600 "${KUBECONFIG_OBS}"
 
 export KUBECONFIG="${KUBECONFIG_OBS}"
 echo "==> Observability cluster nodes:"
