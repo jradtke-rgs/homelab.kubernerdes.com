@@ -27,18 +27,18 @@ source "${SCRIPT_DIR}/env.sh"
 
 # ---------------------------------------------------------------------------
 # Validate harvester kubeconfig and resolved rancher-01 IP
+# env.sh queries Harvester via kubectl to set RANCHER_NODE_01; without the
+# kubeconfig that lookup returns empty and all subsequent SSH/scp calls fail.
 # ---------------------------------------------------------------------------
-_HARVESTER_KC="${HOME}/.kube/${ENVIRONMENT}-harvester.kubeconfig"
-if [[ ! -f "${_HARVESTER_KC}" ]]; then
-  echo "ERROR: Harvester kubeconfig not found: ${_HARVESTER_KC}" >&2
+if [[ ! -f "${KUBECONFIG_HARVESTER}" ]]; then
+  echo "ERROR: Harvester kubeconfig not found: ${KUBECONFIG_HARVESTER}" >&2
   echo "       Create it first, then re-run this script." >&2
   exit 1
 fi
 if [[ -z "${RANCHER_NODE_01:-}" ]]; then
-  echo "ERROR: Could not resolve IP for rancher-01 from ${_HARVESTER_KC}" >&2
+  echo "ERROR: Could not resolve IP for rancher-01 from ${KUBECONFIG_HARVESTER}" >&2
   exit 1
 fi
-unset _HARVESTER_KC
 
 KUBECONFIG_PATH="${KUBECONFIG_RANCHER}"
 
